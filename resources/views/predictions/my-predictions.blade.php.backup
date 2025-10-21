@@ -1,0 +1,94 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Mes Pronostics
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    @if($predictions->count() > 0)
+                        <div class="space-y-4">
+                            @foreach($predictions as $prediction)
+                                <div class="border rounded-lg p-4 {{ $prediction->game->is_finished ? 'bg-gray-50' : '' }}">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <div class="text-center flex-1">
+                                                    <p class="font-semibold">{{ $prediction->game->homeTeam->name }}</p>
+                                                </div>
+                                                <div class="px-4">
+                                                    <p class="text-gray-500 text-sm">VS</p>
+                                                </div>
+                                                <div class="text-center flex-1">
+                                                    <p class="font-semibold">{{ $prediction->game->awayTeam->name }}</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center justify-between text-sm text-gray-600">
+                                                <div class="flex-1 text-center">
+                                                    <p>Journée {{ $prediction->game->matchday }}</p>
+                                                    <p>{{ $prediction->game->match_date->format('d/m/Y H:i') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 pt-4 border-t">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-1">
+                                                <p class="text-sm text-gray-600 mb-1">Mon pronostic</p>
+                                                <p class="text-2xl font-bold text-blue-600">
+                                                    {{ $prediction->home_score }} - {{ $prediction->away_score }}
+                                                </p>
+                                            </div>
+
+                                            @if($prediction->game->is_finished)
+                                                <div class="flex-1 text-center">
+                                                    <p class="text-sm text-gray-600 mb-1">Score final</p>
+                                                    <p class="text-2xl font-bold">
+                                                        {{ $prediction->game->home_score }} - {{ $prediction->game->away_score }}
+                                                    </p>
+                                                </div>
+
+                                                <div class="flex-1 text-right">
+                                                    @if($prediction->points_earned !== null)
+                                                        <p class="text-sm text-gray-600 mb-1">Points gagnés</p>
+                                                        <p class="text-3xl font-bold text-green-600">
+                                                            {{ $prediction->points_earned }}
+                                                        </p>
+                                                    @else
+                                                        <p class="text-sm text-gray-400">En attente de calcul</p>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <div class="flex-1 text-right">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                                        En attente
+                                                    </span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-6">
+                            {{ $predictions->links() }}
+                        </div>
+                    @else
+                        <div class="text-center py-8">
+                            <p class="text-gray-500 mb-4">Vous n'avez pas encore fait de pronostics.</p>
+                            <a href="{{ route('games.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                                Faire mes premiers pronostics
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>

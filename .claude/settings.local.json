@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer --version)",
+      "Read(//g/Autres Projets/**)",
+      "Bash(composer create-project:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(php artisan:*)",
+      "Bash(composer:*)",
+      "Bash(npm run build)",
+      "Bash(find \"G:/Autres Projets/agglobet\" -maxdepth 1 -type f ( -name \"*.md\" -o -name \"*.txt\" -o -name \"*.yml\" -o -name \"*.yaml\" ))",
+      "Bash(npm install vue@^3.5 @vitejs/plugin-vue)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
