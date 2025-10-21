@@ -19,7 +19,7 @@
 /storage/*.key
 /storage/pail
 /vendor
-/FICHIERS_À_NE_PAS_COMMITER
+/FICHIERS_A_NE_PAS_COMMITER
 Homestead.json
 Homestead.yaml
 Thumbs.db
