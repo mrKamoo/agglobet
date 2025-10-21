@@ -11,9 +11,6 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-2xl font-bold mb-4">Pronostiquez sur la Ligue 1 McDonald's</h3>
-                    <p class="text-gray-600 mb-1">
-                        Site officiel de pronostics pour la Ligue 1 McDonald's de l'Agglomération Béziers Méditerranée. 
-                    </p>
                     <p class="text-gray-600 mb-4">
                         Rejoignez notre communauté de passionnés de football et testez vos compétences en pronostiquant les résultats des matchs tout au long de la saison !
                     </p>
