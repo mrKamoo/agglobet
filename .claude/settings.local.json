@@ -17,7 +17,8 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit - Agglobet V2\n\nApplication de pronostics football avec Laravel 12, Vue.js 3 et Tailwind CSS v4.\nFonctionnalités: prédictions matchs Ligue 1, synchronisation API Football-Data.org, calcul automatique des points.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git branch:*)",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
