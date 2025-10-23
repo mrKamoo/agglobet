@@ -15,6 +15,17 @@
                     <span class="text-gray-400 text-xs font-bold">{{ game.home_team.short_name }}</span>
                 </div>
                 <p class="text-sm font-bold text-gray-900 line-clamp-1 text-center" :title="game.home_team.name">{{ game.home_team.short_name }}</p>
+
+                <!-- Team Form Indicators -->
+                <div v-if="game.home_team.form && game.home_team.form.length > 0" class="flex gap-1 mt-1">
+                    <div
+                        v-for="(result, index) in game.home_team.form"
+                        :key="index"
+                        :class="getFormClass(result)"
+                        class="w-3 h-3 rounded-full"
+                        :title="getFormTitle(result)"
+                    ></div>
+                </div>
             </div>
 
             <!-- Score / VS / Date -->
@@ -58,6 +69,17 @@
                     <span class="text-gray-400 text-xs font-bold">{{ game.away_team.short_name }}</span>
                 </div>
                 <p class="text-sm font-bold text-gray-900 line-clamp-1 text-center" :title="game.away_team.name">{{ game.away_team.short_name }}</p>
+
+                <!-- Team Form Indicators -->
+                <div v-if="game.away_team.form && game.away_team.form.length > 0" class="flex gap-1 mt-1">
+                    <div
+                        v-for="(result, index) in game.away_team.form"
+                        :key="index"
+                        :class="getFormClass(result)"
+                        class="w-3 h-3 rounded-full"
+                        :title="getFormTitle(result)"
+                    ></div>
+                </div>
             </div>
         </div>
 
@@ -132,6 +154,26 @@ const getPointsBadgeClass = (points) => {
         return 'bg-yellow-100 text-yellow-800';
     } else {
         return 'bg-gray-100 text-gray-800';
+    }
+};
+
+const getFormClass = (result) => {
+    if (result === 'W') {
+        return 'bg-green-500'; // Win - Green
+    } else if (result === 'L') {
+        return 'bg-red-500'; // Loss - Red
+    } else {
+        return 'bg-gray-500'; // Draw - Gray
+    }
+};
+
+const getFormTitle = (result) => {
+    if (result === 'W') {
+        return 'Victoire';
+    } else if (result === 'L') {
+        return 'Défaite';
+    } else {
+        return 'Match nul';
     }
 };
 

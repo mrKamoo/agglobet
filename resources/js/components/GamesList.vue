@@ -62,6 +62,9 @@
             <div class="mt-4 flex items-center justify-between">
                 <div class="text-sm text-gray-600">
                     <span v-if="!isLoading">{{ filteredGamesCount }} match(s) trouvé(s)</span>
+                    <span v-if="nextMatchday && !hasActiveFilters" class="ml-2 text-blue-600">
+                        (Prochaine journée: {{ nextMatchday }})
+                    </span>
                 </div>
                 <button
                     v-if="hasActiveFilters"
@@ -139,6 +142,7 @@ const games = ref([]);
 const availableMatchdays = ref([]);
 const season = ref(null);
 const isLoading = ref(true);
+const nextMatchday = ref(null);
 const error = ref('');
 const showSuccessNotification = ref(false);
 
@@ -183,6 +187,7 @@ const loadGames = async () => {
         games.value = response.data.games;
         availableMatchdays.value = response.data.matchdays;
         season.value = response.data.season;
+        nextMatchday.value = response.data.next_matchday;
     } catch (err) {
         console.error('Error loading games:', err);
         error.value = 'Erreur lors du chargement des matchs. Veuillez réessayer.';

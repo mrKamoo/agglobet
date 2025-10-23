@@ -34,8 +34,16 @@ class GameController extends Controller
                 'games' => [],
                 'season' => null,
                 'matchdays' => [],
+                'next_matchday' => null,
             ]);
         }
+
+        // Determine next matchday (upcoming matches)
+        $nextMatchday = Game::where('season_id', $activeSeason->id)
+            ->where('is_finished', false)
+            ->where('match_date', '>=', now())
+            ->orderBy('match_date', 'asc')
+            ->value('matchday');
 
         $query = Game::with(['homeTeam', 'awayTeam', 'predictions' => function ($q) {
             $q->where('user_id', auth()->id());
@@ -43,8 +51,12 @@ class GameController extends Controller
             ->where('season_id', $activeSeason->id);
 
         // Filter by matchday
-        if ($request->has('matchday') && $request->matchday !== null) {
+        // If no matchday filter is provided and no other filters are active, default to next matchday
+        if ($request->has('matchday') && $request->matchday !== null && $request->matchday !== '') {
             $query->where('matchday', $request->matchday);
+        } elseif (!$request->has('status') && !$request->has('search') && $nextMatchday) {
+            // Only apply default matchday if no filters are active
+            $query->where('matchday', $nextMatchday);
         }
 
         // Filter by team (search)
@@ -97,12 +109,14 @@ class GameController extends Controller
                     'name' => $game->homeTeam->name,
                     'short_name' => $game->homeTeam->short_name,
                     'logo' => $game->homeTeam->logo,
+                    'form' => $game->homeTeam->getLastFiveGames($game->id),
                 ],
                 'away_team' => [
                     'id' => $game->awayTeam->id,
                     'name' => $game->awayTeam->name,
                     'short_name' => $game->awayTeam->short_name,
                     'logo' => $game->awayTeam->logo,
+                    'form' => $game->awayTeam->getLastFiveGames($game->id),
                 ],
                 'user_prediction' => $userPrediction ? [
                     'id' => $userPrediction->id,
@@ -121,6 +135,7 @@ class GameController extends Controller
                 'name' => $activeSeason->name,
             ],
             'matchdays' => $matchdays,
+            'next_matchday' => $nextMatchday,
         ]);
     }
 
