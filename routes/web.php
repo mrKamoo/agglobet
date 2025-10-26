@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+Route::get('/api/users/{user}/stats', [LeaderboardController::class, 'userStats'])->name('api.users.stats');
 
 // Vue.js test route (can be removed after testing)
 Route::get('/vue-test', function () {

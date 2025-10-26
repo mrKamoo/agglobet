@@ -6,6 +6,14 @@ import { createApp } from 'vue';
 window.Alpine = Alpine;
 Alpine.start();
 
+// Expose Vue globally for inline scripts
+window.Vue = { createApp };
+
+// Import and expose components globally for use in Blade templates
+import UserStatsModal from './components/UserStatsModal.vue';
+
+window.UserStatsModal = UserStatsModal;
+
 // Initialiser Vue 3
 // Import de tous les composants Vue depuis le dossier components
 const app = createApp({});
