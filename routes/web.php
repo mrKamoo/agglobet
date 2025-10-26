@@ -61,6 +61,10 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     Route::post('/sync/teams', [\App\Http\Controllers\Admin\FootballSyncController::class, 'syncTeams'])->name('sync.teams');
 
     Route::post('/sync/recalculate-points', [\App\Http\Controllers\Admin\FootballSyncController::class,'recalculatePoints'])->name('sync.recalculate-points');
+
+    // Database Backup
+    Route::post('/backup', [\App\Http\Controllers\Admin\DashboardController::class, 'backup'])->name('backup');
+    Route::get('/backup/download/{filename}', [\App\Http\Controllers\Admin\DashboardController::class, 'downloadBackup'])->name('backup.download');
 });
 
 require __DIR__.'/auth.php';
