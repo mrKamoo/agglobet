@@ -20,7 +20,9 @@
       "Bash(git commit:*)",
       "Bash(git rm:*)",
       "Bash(cat:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

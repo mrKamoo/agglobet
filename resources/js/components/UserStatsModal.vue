@@ -1,13 +1,14 @@
 <template>
     <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" @click="close">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+        <div class="flex items-center justify-center min-h-screen px-4 py-8 text-center sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
 
-            <div class="relative inline-block w-full max-w-4xl overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle" @click.stop>
-                <div class="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600">
+            <div class="relative inline-block w-full max-w-3xl overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl my-8" @click.stop>
+                <!-- Header - Always visible -->
+                <div class="px-6 py-4" style="background: linear-gradient(to right, rgb(37, 99, 235), rgb(79, 70, 229));">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-2xl font-bold text-white">
-                            {{ stats?.user?.name || 'Chargement...' }}
+                        <h3 class="text-xl font-bold text-white">
+                            {{ stats?.user?.name || 'Statistiques du joueur' }}
                         </h3>
                         <button @click="close" class="text-white hover:text-gray-200 transition">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -17,34 +18,35 @@
                     </div>
                 </div>
 
+                <!-- Loading state -->
                 <div v-if="loading" class="px-6 py-12 text-center">
                     <div class="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                     <p class="mt-4 text-gray-600">Chargement des statistiques...</p>
                 </div>
 
-                <div v-else-if="stats" class="px-6 py-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
-                            <div class="text-sm font-medium text-blue-600">Total Points</div>
-                            <div class="text-3xl font-bold text-blue-900 mt-1">{{ stats.stats.total_points }}</div>
+                <div v-else-if="stats" class="px-6 py-4 max-h-[calc(100vh-250px)] overflow-y-auto">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg">
+                            <div class="text-xs font-medium text-blue-600">Total Points</div>
+                            <div class="text-2xl font-bold text-blue-900 mt-1">{{ stats.stats.total_points }}</div>
                         </div>
-                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
-                            <div class="text-sm font-medium text-green-600">Taux de réussite</div>
-                            <div class="text-3xl font-bold text-green-900 mt-1">{{ stats.stats.success_rate }}%</div>
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg">
+                            <div class="text-xs font-medium text-green-600">Taux de réussite</div>
+                            <div class="text-2xl font-bold text-green-900 mt-1">{{ stats.stats.success_rate }}%</div>
                         </div>
-                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg">
-                            <div class="text-sm font-medium text-purple-600">Moyenne/match</div>
-                            <div class="text-3xl font-bold text-purple-900 mt-1">{{ stats.stats.avg_points }}</div>
+                        <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg">
+                            <div class="text-xs font-medium text-purple-600">Moyenne/match</div>
+                            <div class="text-2xl font-bold text-purple-900 mt-1">{{ stats.stats.avg_points }}</div>
                         </div>
-                        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg">
-                            <div class="text-sm font-medium text-orange-600">Pronostics</div>
-                            <div class="text-3xl font-bold text-orange-900 mt-1">{{ stats.stats.predictions_count }}</div>
+                        <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-3 rounded-lg">
+                            <div class="text-xs font-medium text-orange-600">Pronostics</div>
+                            <div class="text-2xl font-bold text-orange-900 mt-1">{{ stats.stats.predictions_count }}</div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-semibold text-gray-900 mb-4">Répartition des points</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-3 text-sm">Répartition des points</h4>
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
@@ -81,41 +83,41 @@
                             </div>
                         </div>
 
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-semibold text-gray-900 mb-4">Séries et records</h4>
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between p-3 bg-white rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <div class="text-2xl">🔥</div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-3 text-sm">Séries et records</h4>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between p-2 bg-white rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-xl">🔥</div>
                                         <div>
-                                            <div class="text-sm text-gray-600">Série en cours</div>
-                                            <div class="font-bold text-lg">{{ stats.stats.current_streak }} matchs</div>
+                                            <div class="text-xs text-gray-600">Série en cours</div>
+                                            <div class="font-bold">{{ stats.stats.current_streak }} matchs</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="flex items-center justify-between p-3 bg-white rounded-lg">
-                                    <div class="flex items-center gap-3">
-                                        <div class="text-2xl">⭐</div>
+                                <div class="flex items-center justify-between p-2 bg-white rounded-lg">
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-xl">⭐</div>
                                         <div>
-                                            <div class="text-sm text-gray-600">Meilleure série</div>
-                                            <div class="font-bold text-lg">{{ stats.stats.best_streak }} matchs</div>
+                                            <div class="text-xs text-gray-600">Meilleure série</div>
+                                            <div class="font-bold">{{ stats.stats.best_streak }} matchs</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-if="stats.stats.exact_scores >= 5" class="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-300">
-                                    <div class="flex items-center gap-3">
-                                        <div class="text-2xl">🎯</div>
+                                <div v-if="stats.stats.exact_scores >= 5" class="flex items-center justify-between p-2 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-300">
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-xl">🎯</div>
                                         <div>
-                                            <div class="text-sm text-yellow-800 font-medium">Badge: Sniper</div>
+                                            <div class="text-xs text-yellow-800 font-medium">Badge: Sniper</div>
                                             <div class="text-xs text-yellow-700">5+ scores exacts</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div v-if="stats.stats.current_streak >= 5" class="flex items-center justify-between p-3 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-300">
-                                    <div class="flex items-center gap-3">
-                                        <div class="text-2xl">🔥</div>
+                                <div v-if="stats.stats.current_streak >= 5" class="flex items-center justify-between p-2 bg-gradient-to-r from-red-50 to-red-100 rounded-lg border border-red-300">
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-xl">🔥</div>
                                         <div>
-                                            <div class="text-sm text-red-800 font-medium">Badge: En feu</div>
+                                            <div class="text-xs text-red-800 font-medium">Badge: En feu</div>
                                             <div class="text-xs text-red-700">Série de {{ stats.stats.current_streak }} matchs</div>
                                         </div>
                                     </div>
@@ -124,18 +126,18 @@
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                        <h4 class="font-semibold text-gray-900 mb-4">Évolution des points par journée</h4>
-                        <div class="bg-white p-4 rounded-lg">
-                            <canvas ref="chartCanvas" height="100"></canvas>
+                    <div class="bg-gray-50 p-3 rounded-lg mb-4">
+                        <h4 class="font-semibold text-gray-900 mb-3 text-sm">Évolution des points par journée</h4>
+                        <div class="bg-white p-3 rounded-lg">
+                            <canvas ref="chartCanvas" height="80"></canvas>
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <h4 class="font-semibold text-gray-900 mb-4">Derniers pronostics</h4>
-                        <div class="space-y-2">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-3 text-sm">Derniers pronostics</h4>
+                        <div class="space-y-2 max-h-60 overflow-y-auto">
                             <div v-for="prediction in stats.recent_predictions" :key="prediction.match_date"
-                                class="flex items-center justify-between p-3 bg-white rounded-lg">
+                                class="flex items-center justify-between p-2 bg-white rounded-lg text-sm">
                                 <div class="flex-1">
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ prediction.home_team }} vs {{ prediction.away_team }}
@@ -160,8 +162,8 @@
                     </div>
                 </div>
 
-                <div class="px-6 py-4 bg-gray-50 flex justify-end">
-                    <button @click="close" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                <div class="px-6 py-3 bg-gray-50 flex justify-end">
+                    <button @click="close" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
                         Fermer
                     </button>
                 </div>
