@@ -223,27 +223,39 @@
     </div>
 
     @push('scripts')
-    <script>
-        const { createApp } = Vue;
-
-        createApp({
-            data() {
-                return {
-                    selectedUserId: null,
-                    isModalOpen: false,
-                };
-            },
-            methods: {
-                openUserStats(userId) {
-                    this.selectedUserId = userId;
-                    this.isModalOpen = true;
-                },
-                closeUserStats() {
-                    this.isModalOpen = false;
-                    this.selectedUserId = null;
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for Vue and components to be loaded
+            const initLeaderboard = () => {
+                if (typeof window.Vue === 'undefined' || typeof window.UserStatsModal === 'undefined') {
+                    setTimeout(initLeaderboard, 100);
+                    return;
                 }
-            }
-        }).component('user-stats-modal', window.UserStatsModal).mount('#leaderboard-app');
+
+                const { createApp } = window.Vue;
+
+                createApp({
+                    data() {
+                        return {
+                            selectedUserId: null,
+                            isModalOpen: false,
+                        };
+                    },
+                    methods: {
+                        openUserStats(userId) {
+                            this.selectedUserId = userId;
+                            this.isModalOpen = true;
+                        },
+                        closeUserStats() {
+                            this.isModalOpen = false;
+                            this.selectedUserId = null;
+                        }
+                    }
+                }).component('user-stats-modal', window.UserStatsModal).mount('#leaderboard-app');
+            };
+
+            initLeaderboard();
+        });
     </script>
     @endpush
 </x-app-layout>
