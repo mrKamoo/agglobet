@@ -377,4 +377,47 @@ class FootballDataService
 
         return $stats;
     }
+
+    /**
+     * Récupère le classement de la Ligue 1
+     */
+    public function fetchStandings(?Season $season = null): array
+    {
+        try {
+            $params = [];
+
+            if ($season) {
+                $params['season'] = $this->extractSeasonYear($season->name);
+            }
+
+            $response = Http::withHeaders([
+                'X-Auth-Token' => $this->apiKey,
+            ])->get("{$this->baseUrl}/competitions/{$this->ligue1Id}/standings", $params);
+
+            if ($response->failed()) {
+                Log::error('Football-Data API Error (Standings)', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \Exception('Erreur lors de la récupération du classement: ' . $response->status());
+            }
+
+            $data = $response->json();
+
+            // Retourner le classement général (type: 'TOTAL')
+            $standings = collect($data['standings'] ?? [])
+                ->firstWhere('type', 'TOTAL');
+
+            return [
+                'competition' => $data['competition'] ?? [],
+                'season' => $data['season'] ?? [],
+                'standings' => $standings['table'] ?? [],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Football-Data Service Error (Standings)', [
+                'message' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
 }

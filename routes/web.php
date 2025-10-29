@@ -5,11 +5,13 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StandingsController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+Route::get('/standings', [StandingsController::class, 'index'])->name('standings');
 Route::get('/api/users/{user}/stats', [LeaderboardController::class, 'userStats'])->name('api.users.stats');
 
 // Vue.js test route (can be removed after testing)

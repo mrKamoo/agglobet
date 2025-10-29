@@ -24,7 +24,10 @@
                         </x-nav-link>
                     @endauth
                     <x-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
-                        Classement
+                        Classement Joueurs
+                    </x-nav-link>
+                    <x-nav-link :href="route('standings')" :active="request()->routeIs('standings')">
+                        Classement Ligue 1
                     </x-nav-link>
                     @auth
                         @if(auth()->user()->is_admin)
@@ -108,7 +111,10 @@
                 </x-responsive-nav-link>
             @endauth
             <x-responsive-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
-                Classement
+                Classement Joueurs
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('standings')" :active="request()->routeIs('standings')">
+                Classement Ligue 1
             </x-responsive-nav-link>
             @auth
                 @if(auth()->user()->is_admin)
