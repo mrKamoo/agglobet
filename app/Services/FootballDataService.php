@@ -138,7 +138,8 @@ class FootballDataService
             // Mettre à jour uniquement si le statut a changé ou si les scores ont changé
             if ($game->is_finished != $isFinished ||
                 $game->home_score != $homeScore ||
-                $game->away_score != $awayScore) {
+                $game->away_score != $awayScore ||
+                $game->match_date->ne($matchDate)) {
 
                 $wasNotFinished = !$game->is_finished;
 
