@@ -112,7 +112,7 @@ class FootballDataService
         $matchday = $matchData['matchday'] ?? null;
 
         // Date du match
-        $matchDate = Carbon::parse($matchData['utcDate']);
+        $matchDate = Carbon::parse($matchData['utcDate'])->setTimezone('Europe/Paris');
 
         // Scores (si le match est terminé)
         $homeScore = null;
