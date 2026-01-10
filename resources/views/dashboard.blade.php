@@ -4,7 +4,6 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Tableau de bord') }}
             </h2>
-            <span class="text-sm text-gray-500">{{ now()->format('d F Y') }}</span>
         </div>
     </x-slot>
 
