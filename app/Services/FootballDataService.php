@@ -7,6 +7,7 @@ use App\Models\Season;
 use App\Models\Team;
 use App\Models\PointsRule;
 use App\Models\Prediction;
+use App\Models\ApiLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -89,6 +90,22 @@ class FootballDataService
                 ]);
                 $stats['skipped']++;
             }
+        }
+
+        if ($stats['skipped'] > 0) {
+             ApiLog::create([
+                'type' => 'matches',
+                'status' => 'warning',
+                'message' => "Synchronisation terminée avec des erreurs: {$stats['skipped']} matchs ignorés.",
+                'details' => $stats,
+            ]);
+        } else {
+             ApiLog::create([
+                'type' => 'matches',
+                'status' => 'success',
+                'message' => 'Synchronisation des matchs terminée avec succès.',
+                'details' => $stats,
+            ]);
         }
 
         return $stats;
@@ -250,6 +267,13 @@ class FootballDataService
             $this->calculatePoints($game);
         }
 
+        ApiLog::create([
+            'type' => 'recalc',
+            'status' => 'success',
+            'message' => 'Recalcul des points terminé.',
+            'details' => $stats,
+        ]);
+
         return $stats;
     }
 
@@ -375,6 +399,13 @@ class FootballDataService
                 $stats['created']++;
             }
         }
+
+        ApiLog::create([
+            'type' => 'teams',
+            'status' => 'success',
+            'message' => 'Synchronisation des équipes terminée.',
+            'details' => $stats,
+        ]);
 
         return $stats;
     }

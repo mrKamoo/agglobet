@@ -65,6 +65,8 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Database Backup
     Route::post('/backup', [\App\Http\Controllers\Admin\DashboardController::class, 'backup'])->name('backup');
     Route::get('/backup/download/{filename}', [\App\Http\Controllers\Admin\DashboardController::class, 'downloadBackup'])->name('backup.download');
+    // Logs
+    Route::get('/logs', [\App\Http\Controllers\Admin\LogController::class, 'index'])->name('logs.index');
 });
 
 require __DIR__.'/auth.php';

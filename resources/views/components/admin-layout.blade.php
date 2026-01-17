@@ -48,6 +48,9 @@
    leading-5 focus:outline-none transition duration-150 ease-in-out">
       Synchronisation
   </a>
+  <a href="{{ route('admin.logs.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.logs.*') ? 'border-indigo-400 text-white' : 'border-transparent text-gray-100 hover:text-white hover:border-gray-400' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+      Logs
+  </a>
                             </div>
                         </div>
 

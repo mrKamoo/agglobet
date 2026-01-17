@@ -43,6 +43,9 @@
                                 <a href="{{ route('admin.results.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.results.*') ? 'border-indigo-400 text-white' : 'border-transparent text-gray-300 hover:text-white hover:border-gray-300' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
                                     Résultats
                                 </a>
+                                <a href="{{ route('admin.logs.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.logs.*') ? 'border-indigo-400 text-white' : 'border-transparent text-gray-300 hover:text-white hover:border-gray-300' }} text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                                    Logs
+                                </a>
                             </div>
                         </div>
 
