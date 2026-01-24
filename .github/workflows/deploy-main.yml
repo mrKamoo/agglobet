@@ -19,7 +19,7 @@ jobs:
           script: |
             set -e
             cd /var/www/agglobet/agglobet
-            sudo git fetch main
-            sudo git reset --hard main
+            sudo git fetch origin main
+            sudo git reset --hard origin/main
             sudo npm run build
 
