@@ -1,6 +1,6 @@
 name: Deploy to Main
 
-# Se déclenche uniquement lors d'un push sur la branche main
+# Se déclenche uniquement lors d'un push sur la branche main ichala ca marche
 on:
   push:
     branches:
