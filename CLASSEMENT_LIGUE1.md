@@ -29,6 +29,7 @@ La page de classement de la Ligue 1 affiche le classement officiel du championna
 Le classement est mis en cache pendant **1 heure** pour optimiser les performances et respecter les limites de l'API (10 requêtes/minute sur le tier gratuit).
 
 ## Accès
+Correction de la route publique
 
 ### Route publique
 ```
