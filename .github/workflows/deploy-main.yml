@@ -1,0 +1,24 @@
+name: Deploy to Main
+
+# Se déclenche uniquement lors d'un push sur la branche main
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/agglobet/agglobet
+            git fetch origin main
+            git reset --hard origin/main
+            npm run build
+
