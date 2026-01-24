@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\IsAdmin::class,
         ]);
     })
+    ->withMiddleware(function (Middleware $middleware) {
+    $middleware->trustProxies(at: '*'); // Faire confiance à tous les proxys (ok pour préprod)
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
