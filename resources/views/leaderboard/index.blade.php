@@ -42,29 +42,42 @@
                 <div class="p-6 text-gray-900">
 
                     <!-- Header with Filters -->
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                        <h3 class="text-xl font-bold">Classement général</h3>
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <h3 class="text-xl font-bold">Classement général</h3>
+                            
+                            <!-- Season Selector -->
+                            <div class="flex items-center gap-2">
+                                <select onchange="window.location.href='{{ route('leaderboard') }}?season_id=' + this.value" class="rounded-lg text-sm border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 font-semibold text-gray-700">
+                                    @foreach($seasons as $s)
+                                        <option value="{{ $s->id }}" {{ $selectedSeasonId == $s->id ? 'selected' : '' }}>
+                                            {{ $s->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
 
                         <!-- Period Filter -->
                         <div class="flex flex-wrap gap-2">
-                            <a href="{{ route('leaderboard', ['period' => 'all']) }}"
+                            <a href="{{ route('leaderboard', ['period' => 'all', 'season_id' => $selectedSeasonId]) }}"
                                class="px-4 py-2 rounded-lg text-sm font-medium transition {{ $period === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                                 Tout
                             </a>
-                            <a href="{{ route('leaderboard', ['period' => 'month']) }}"
+                            <a href="{{ route('leaderboard', ['period' => 'month', 'season_id' => $selectedSeasonId]) }}"
                                class="px-4 py-2 rounded-lg text-sm font-medium transition {{ $period === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                                 Ce mois
                             </a>
-                            <a href="{{ route('leaderboard', ['period' => 'week']) }}"
+                            <a href="{{ route('leaderboard', ['period' => 'week', 'season_id' => $selectedSeasonId]) }}"
                                class="px-4 py-2 rounded-lg text-sm font-medium transition {{ $period === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                                 Cette semaine
                             </a>
 
                             <!-- Matchday Dropdown -->
                             <select onchange="window.location.href=this.value" class="px-4 py-2 rounded-lg text-sm font-medium border-gray-300 {{ $period === 'matchday' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }}">
-                                <option value="{{ route('leaderboard') }}">Par journée</option>
+                                <option value="{{ route('leaderboard', ['season_id' => $selectedSeasonId]) }}">Par journée</option>
                                 @foreach($matchdays as $md)
-                                    <option value="{{ route('leaderboard', ['period' => 'matchday', 'matchday' => $md]) }}"
+                                    <option value="{{ route('leaderboard', ['period' => 'matchday', 'matchday' => $md, 'season_id' => $selectedSeasonId]) }}"
                                             {{ $period === 'matchday' && $matchday == $md ? 'selected' : '' }}>
                                         Journée {{ $md }}
                                     </option>

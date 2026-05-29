@@ -19,6 +19,9 @@ class SeasonFactory extends Factory
             'start_date' => $startDate,
             'end_date' => $endDate,
             'is_active' => false,
+            'type' => 'league',
+            'competition_id' => null,
+            'winner_team_id' => null,
         ];
     }
 

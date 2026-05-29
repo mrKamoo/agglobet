@@ -25,12 +25,18 @@ class SeasonController extends Controller
             'name' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
+            'type' => 'required|string|in:league,tournament',
+            'competition_id' => 'nullable|integer',
         ]);
 
-        Season::create($request->all());
+        // Quand une nouvelle compétition est créée, elle prend le dessus (is_active = true)
+        // et désactive toutes les autres saisons existantes.
+        Season::query()->update(['is_active' => false]);
+
+        Season::create(array_merge($request->all(), ['is_active' => true]));
 
         return redirect()->route('admin.seasons.index')
-            ->with('success', 'Saison créée avec succès.');
+            ->with('success', 'Saison créée avec succès et définie comme active.');
     }
 
     public function edit(Season $season)
@@ -45,6 +51,8 @@ class SeasonController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'is_active' => 'boolean',
+            'type' => 'required|string|in:league,tournament',
+            'competition_id' => 'nullable|integer',
         ]);
 
         // If activating this season, deactivate all others

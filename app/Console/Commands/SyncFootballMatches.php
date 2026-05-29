@@ -48,7 +48,7 @@ class SyncFootballMatches extends Command
             // Synchroniser les équipes si demandé
             if ($this->option('teams')) {
                 $this->info('👕 Synchronisation des équipes...');
-                $teamStats = $service->syncTeams();
+                $teamStats = $service->syncTeams($season);
                 $this->info("✅ Équipes synchronisées:");
                 $this->table(
                     ['Total', 'Créées', 'Mises à jour'],

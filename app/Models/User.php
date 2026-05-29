@@ -54,4 +54,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Prediction::class);
     }
+
+    public function championPredictions()
+    {
+        return $this->hasMany(ChampionPrediction::class);
+    }
 }

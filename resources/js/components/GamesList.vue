@@ -2,20 +2,70 @@
     <div class="space-y-6">
         <!-- Filters Section -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Mode Toggle Tabs -->
+            <div class="flex border-b border-gray-200 mb-6">
+                <button
+                    @click="filterMode = 'matchday'"
+                    :class="['pb-3 px-4 font-semibold text-sm border-b-2 transition-all flex items-center gap-2', filterMode === 'matchday' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300']"
+                >
+                    ⚽ Par Étape / Journée
+                </button>
+                <button
+                    @click="filterMode = 'date'"
+                    :class="['pb-3 px-4 font-semibold text-sm border-b-2 transition-all flex items-center gap-2', filterMode === 'date' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300']"
+                >
+                    📅 Par Date Calendaire
+                </button>
+            </div>
+
+            <div :class="['grid grid-cols-1 gap-4', availableGroups.length > 0 ? 'md:grid-cols-4' : 'md:grid-cols-3']">
                 <!-- Matchday Filter -->
-                <div>
+                <div v-if="filterMode === 'matchday'">
                     <label for="matchday-filter" class="block text-sm font-medium text-gray-700 mb-2">
-                        Journée
+                        Sélectionner l'Étape
                     </label>
                     <select
                         id="matchday-filter"
                         v-model="filters.matchday"
                         class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                     >
-                        <option :value="null">Toutes les journées</option>
+                        <option :value="null">Toutes les étapes</option>
                         <option v-for="day in availableMatchdays" :key="day" :value="day">
-                            Journée {{ day }}
+                            {{ getMatchdayLabel(day) }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Date Filter -->
+                <div v-if="filterMode === 'date'">
+                    <label for="date-filter" class="block text-sm font-medium text-gray-700 mb-2">
+                        Sélectionner la Date
+                    </label>
+                    <select
+                        id="date-filter"
+                        v-model="filters.date"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                        <option :value="null">Toutes les dates</option>
+                        <option v-for="date in availableDates" :key="date" :value="date">
+                            {{ formatDateFrench(date) }}
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Group Filter -->
+                <div v-if="availableGroups.length > 0">
+                    <label for="group-filter" class="block text-sm font-medium text-gray-700 mb-2">
+                        Sélectionner le Groupe
+                    </label>
+                    <select
+                        id="group-filter"
+                        v-model="filters.group"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                        <option :value="null">Tous les groupes</option>
+                        <option v-for="grp in availableGroups" :key="grp" :value="grp">
+                            Groupe {{ grp }}
                         </option>
                     </select>
                 </div>
@@ -63,7 +113,7 @@
                 <div class="text-sm text-gray-600">
                     <span v-if="!isLoading">{{ filteredGamesCount }} match(s) trouvé(s)</span>
                     <span v-if="nextMatchday && !hasActiveFilters" class="ml-2 text-blue-600">
-                        (Prochaine journée: {{ nextMatchday }})
+                        (Prochaine étape: {{ getMatchdayLabel(nextMatchday) }})
                     </span>
                 </div>
                 <button
@@ -140,14 +190,19 @@ import GameCard from './GameCard.vue';
 
 const games = ref([]);
 const availableMatchdays = ref([]);
+const availableDates = ref([]);
+const availableGroups = ref([]);
 const season = ref(null);
 const isLoading = ref(true);
 const nextMatchday = ref(null);
 const error = ref('');
 const showSuccessNotification = ref(false);
+const filterMode = ref('matchday');
 
 const filters = ref({
     matchday: null,
+    date: null,
+    group: null,
     status: '',
     search: ''
 });
@@ -156,6 +211,8 @@ const filteredGamesCount = computed(() => games.value.length);
 
 const hasActiveFilters = computed(() => {
     return filters.value.matchday !== null ||
+           filters.value.date !== null ||
+           filters.value.group !== null ||
            filters.value.status !== '' ||
            filters.value.search !== '';
 });
@@ -165,15 +222,64 @@ watch(filters, () => {
     loadGames();
 }, { deep: true });
 
+// Watch filters.group to clear matchday/date if a group is selected
+watch(() => filters.value.group, (newGroup) => {
+    if (newGroup !== null) {
+        filters.value.matchday = null;
+        filters.value.date = null;
+    }
+});
+
+// Watch matchday and date to clear group if they are set
+watch(() => filters.value.matchday, (newMatchday) => {
+    if (newMatchday !== null) {
+        filters.value.group = null;
+    }
+});
+
+watch(() => filters.value.date, (newDate) => {
+    if (newDate !== null) {
+        filters.value.group = null;
+    }
+});
+
+// Watch filterMode and adjust corresponding filters
+watch(filterMode, (newMode) => {
+    filters.value.group = null;
+    if (newMode === 'matchday') {
+        filters.value.date = null;
+    } else {
+        filters.value.matchday = null;
+        if (availableDates.value.length > 0 && !filters.value.date) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const upcomingDate = availableDates.value.find(d => d >= todayStr);
+            filters.value.date = upcomingDate || availableDates.value[0];
+        }
+    }
+});
+
 const loadGames = async () => {
     isLoading.value = true;
     error.value = '';
 
     try {
         const params = {};
+        
+        // Lire season_id depuis l'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const seasonId = urlParams.get('season_id');
+        if (seasonId) {
+            params.season_id = seasonId;
+        }
 
         if (filters.value.matchday !== null) {
             params.matchday = filters.value.matchday;
+        }
+        if (filters.value.date !== null) {
+            params.date = filters.value.date;
+        }
+        if (filters.value.group !== null) {
+            params.group = filters.value.group;
         }
         if (filters.value.status) {
             params.status = filters.value.status;
@@ -186,6 +292,8 @@ const loadGames = async () => {
 
         games.value = response.data.games;
         availableMatchdays.value = response.data.matchdays;
+        availableDates.value = response.data.match_dates;
+        availableGroups.value = response.data.groups || [];
         season.value = response.data.season;
         nextMatchday.value = response.data.next_matchday;
     } catch (err) {
@@ -199,6 +307,8 @@ const loadGames = async () => {
 const clearFilters = () => {
     filters.value = {
         matchday: null,
+        date: filterMode.value === 'date' && availableDates.value.length > 0 ? (availableDates.value.find(d => d >= new Date().toISOString().split('T')[0]) || availableDates.value[0]) : null,
+        group: null,
         status: '',
         search: ''
     };
@@ -216,6 +326,35 @@ const handlePredictionUpdate = (data) => {
     setTimeout(() => {
         showSuccessNotification.value = false;
     }, 3000);
+};
+
+const getMatchdayLabel = (day) => {
+    if (season.value && season.value.type === 'tournament') {
+        const labels = {
+            1: 'Journée 1',
+            2: 'Journée 2',
+            3: 'Journée 3',
+            4: '16es de finale',
+            5: '8es de finale',
+            6: 'Quarts de finale',
+            7: 'Demi-finale',
+            8: 'Match pour la 3e place',
+            9: 'Finale'
+        };
+        return labels[day] || `Étape ${day}`;
+    }
+    return `Journée ${day}`;
+};
+
+const formatDateFrench = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).replace(/^\w/, (c) => c.toUpperCase());
 };
 
 onMounted(() => {

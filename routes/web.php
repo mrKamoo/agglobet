@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 Route::get('/standings', [StandingsController::class, 'index'])->name('standings');
+Route::get('/world-cup', [StandingsController::class, 'worldCup'])->name('worldcup.index');
 Route::get('/api/users/{user}/stats', [LeaderboardController::class, 'userStats'])->name('api.users.stats');
 
 // Vue.js test route (can be removed after testing)
@@ -30,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Predictions
     Route::post('/games/{game}/predictions', [PredictionController::class, 'store'])->name('predictions.store');
+    Route::post('/seasons/{season}/champion-prediction', [PredictionController::class, 'storeChampion'])->name('predictions.champion.store');
     Route::get('/my-predictions', [PredictionController::class, 'myPredictions'])->name('predictions.mine');
 
     // Profile

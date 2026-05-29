@@ -1,42 +1,6 @@
 <template>
     <div v-if="canPredict" class="mt-4 border-t pt-4">
         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 shadow-sm relative">
-            <!-- Auto-save Status Indicator -->
-            <div class="absolute top-4 right-4 flex items-center gap-2">
-                <transition name="fade">
-                    <div v-if="saveStatus === 'saving'" class="flex items-center gap-2 text-xs text-blue-600">
-                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span class="font-medium">Enregistrement...</span>
-                    </div>
-                </transition>
-                <transition name="fade">
-                    <div v-if="saveStatus === 'saved'" class="flex items-center gap-2 text-xs text-green-600">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        <span class="font-medium">Enregistré</span>
-                    </div>
-                </transition>
-                <transition name="fade">
-                    <div v-if="saveStatus === 'error'" class="flex items-center gap-2 text-xs text-red-600">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                        </svg>
-                        <span class="font-medium">Erreur</span>
-                    </div>
-                </transition>
-            </div>
-
-            <h3 class="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
-                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-                {{ hasPrediction ? 'Mon pronostic' : 'Pronostic' }}
-            </h3>
-
             <div class="flex flex-col items-center gap-2">
                 <!-- Labels Row -->
                 <div class="flex items-center justify-center gap-3 w-full">
@@ -96,8 +60,30 @@
                 </div>
             </transition>
 
-            <p class="text-center text-xs text-gray-500 mt-2 italic">
-                Auto-save
+            <!-- Auto-save Status Indicator / Text -->
+            <p class="text-center text-[11px] text-gray-500 mt-3 flex items-center justify-center gap-1.5 font-medium">
+                <template v-if="saveStatus === 'saving'">
+                    <svg class="animate-spin h-3.5 w-3.5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-blue-600 font-semibold">Enregistrement automatique...</span>
+                </template>
+                <template v-else-if="saveStatus === 'saved'">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-green-600 font-semibold">Enregistré avec succès !</span>
+                </template>
+                <template v-else-if="saveStatus === 'error'">
+                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="text-red-600 font-semibold">Erreur de sauvegarde</span>
+                </template>
+                <template v-else>
+                    <span class="text-gray-400">⚡ Sauvegarde automatique</span>
+                </template>
             </p>
         </div>
     </div>
@@ -109,6 +95,17 @@
                 </svg>
                 <span class="text-sm font-medium">Fermé</span>
             </div>
+        </div>
+    </div>
+    <div v-else-if="!canPredict && !isPast && !isFinished" class="mt-4 border-t pt-4">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+            <div class="flex items-center justify-center gap-2 text-gray-500">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <span class="text-sm font-medium">Pronostics verrouillés (équipes TBD)</span>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">Les pronostics ouvriront dès que les qualifications seront officielles.</p>
         </div>
     </div>
 </template>

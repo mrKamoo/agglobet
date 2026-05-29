@@ -19,12 +19,36 @@ class Game extends Model
         'home_score',
         'away_score',
         'is_finished',
+        'round',
+        'group',
+        'stadium',
     ];
 
     protected $casts = [
         'match_date' => 'datetime',
         'is_finished' => 'boolean',
     ];
+
+    public function isGroupStage(): bool
+    {
+        return $this->round === 'Phase de groupes';
+    }
+
+    public function isKnockout(): bool
+    {
+        return !$this->isGroupStage() && !is_null($this->round);
+    }
+
+    public function hasPlaceholderTeams(): bool
+    {
+        $placeholderTerms = ['À déterminer', 'Groupe', 'Vainqueur', 'Perdant'];
+        foreach ($placeholderTerms as $term) {
+            if (str_contains($this->homeTeam?->name ?? '', $term) || str_contains($this->awayTeam?->name ?? '', $term)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public function season(): BelongsTo
     {

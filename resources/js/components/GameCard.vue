@@ -1,20 +1,32 @@
 <template>
     <div class="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+        <!-- Tournoi Badge / Info -->
+        <div v-if="game.round" class="flex justify-between items-center mb-3">
+            <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                {{ game.round }}
+            </span>
+            <span v-if="game.group" class="text-xs font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-100">
+                Groupe {{ game.group }}
+            </span>
+        </div>
+
         <!-- Match Header -->
         <div class="flex items-center justify-between mb-3">
             <!-- Home Team -->
-            <div class="flex-1 flex flex-col items-center gap-1">
-                <img
-                    v-if="game.home_team.logo"
-                    :src="game.home_team.logo"
-                    :alt="game.home_team.name"
-                    class="h-8 w-8 object-contain"
-                    @error="handleImageError($event, 'home')"
-                >
-                <div v-else class="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span class="text-gray-400 text-xs font-bold">{{ game.home_team.short_name }}</span>
+            <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-12 h-12 rounded-full bg-white border border-gray-200/80 shadow-sm flex items-center justify-center p-1.5 transition-all duration-300 hover:scale-110 hover:shadow-md">
+                    <img
+                        v-if="game.home_team.logo && !imageErrors.home"
+                        :src="game.home_team.logo"
+                        :alt="game.home_team.name"
+                        class="w-full h-full object-contain rounded-sm"
+                        @error="handleImageError('home')"
+                    >
+                    <div v-else class="w-full h-full rounded-full bg-gray-100 flex items-center justify-center">
+                        <span class="text-gray-500 text-xs font-bold">{{ game.home_team.name.substring(0, 3).toUpperCase() }}</span>
+                    </div>
                 </div>
-                <p class="text-sm font-bold text-gray-900 line-clamp-1 text-center" :title="game.home_team.name">{{ game.home_team.short_name }}</p>
+                <p class="text-sm font-bold text-gray-900 line-clamp-1 text-center" :title="game.home_team.name">{{ game.home_team.name }}</p>
 
                 <!-- Team Form Indicators -->
                 <div v-if="game.home_team.form && game.home_team.form.length > 0" class="flex gap-1 mt-1">
@@ -57,18 +69,20 @@
             </div>
 
             <!-- Away Team -->
-            <div class="flex-1 flex flex-col items-center gap-1">
-                <img
-                    v-if="game.away_team.logo"
-                    :src="game.away_team.logo"
-                    :alt="game.away_team.name"
-                    class="h-8 w-8 object-contain"
-                    @error="handleImageError($event, 'away')"
-                >
-                <div v-else class="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span class="text-gray-400 text-xs font-bold">{{ game.away_team.short_name }}</span>
+            <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-12 h-12 rounded-full bg-white border border-gray-200/80 shadow-sm flex items-center justify-center p-1.5 transition-all duration-300 hover:scale-110 hover:shadow-md">
+                    <img
+                        v-if="game.away_team.logo && !imageErrors.away"
+                        :src="game.away_team.logo"
+                        :alt="game.away_team.name"
+                        class="w-full h-full object-contain rounded-sm"
+                        @error="handleImageError('away')"
+                    >
+                    <div v-else class="w-full h-full rounded-full bg-gray-100 flex items-center justify-center">
+                        <span class="text-gray-500 text-xs font-bold">{{ game.away_team.name.substring(0, 3).toUpperCase() }}</span>
+                    </div>
                 </div>
-                <p class="text-sm font-bold text-gray-900 line-clamp-1 text-center" :title="game.away_team.name">{{ game.away_team.short_name }}</p>
+                <p class="text-sm font-bold text-gray-900 line-clamp-1 text-center" :title="game.away_team.name">{{ game.away_team.name }}</p>
 
                 <!-- Team Form Indicators -->
                 <div v-if="game.away_team.form && game.away_team.form.length > 0" class="flex gap-1 mt-1">
@@ -81,6 +95,15 @@
                     ></div>
                 </div>
             </div>
+        </div>
+
+        <!-- Stadium info -->
+        <div v-if="game.stadium" class="mt-3 mb-2 flex items-center justify-center gap-1 text-xs text-gray-500 text-center font-medium bg-gray-50 py-1.5 px-2.5 rounded border border-gray-100">
+            <svg class="h-3.5 w-3.5 text-gray-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="truncate" :title="game.stadium">{{ game.stadium }}</span>
         </div>
 
         <!-- Prediction Form -->
@@ -98,7 +121,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import PredictionForm from './PredictionForm.vue';
 
 const props = defineProps({
@@ -110,8 +133,10 @@ const props = defineProps({
 
 const emit = defineEmits(['prediction-updated']);
 
-const handleImageError = (event, team) => {
-    event.target.style.display = 'none';
+const imageErrors = ref({ home: false, away: false });
+
+const handleImageError = (team) => {
+    imageErrors.value[team] = true;
 };
 
 const formatDate = (dateString) => {

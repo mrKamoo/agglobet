@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChampionPrediction;
 use App\Models\User;
 use App\Models\Game;
 use App\Models\Prediction;
 use App\Models\PointsRule;
+use App\Models\Season;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -14,6 +16,9 @@ class LeaderboardController extends Controller
 {
     public function index(Request $request)
     {
+        $seasons = Season::orderBy('start_date', 'desc')->get();
+        $selectedSeasonId = $request->get('season_id', Season::where('is_active', true)->first()?->id ?? $seasons->first()?->id);
+        
         $period = $request->get('period', 'all'); // all, month, week, matchday
         $matchday = $request->get('matchday');
 
@@ -29,6 +34,10 @@ class LeaderboardController extends Controller
         $predictionsQuery = Prediction::query()
             ->join('games', 'predictions.game_id', '=', 'games.id')
             ->where('games.is_finished', true);
+
+        if ($selectedSeasonId) {
+            $predictionsQuery->where('games.season_id', $selectedSeasonId);
+        }
 
         switch ($period) {
             case 'month':
@@ -48,13 +57,26 @@ class LeaderboardController extends Controller
                 break;
         }
 
+        $selectedSeason = Season::find($selectedSeasonId);
+
+        // Preload all champion predictions for this season indexed by user_id
+        $championPredictions = $selectedSeasonId
+            ? ChampionPrediction::where('season_id', $selectedSeasonId)->get()->keyBy('user_id')
+            : collect();
+
         // Get detailed statistics for each user
-        $leaderboard = $query->get()->map(function ($user) use ($predictionsQuery, $pointsRule) {
+        $leaderboard = $query->get()->map(function ($user) use ($predictionsQuery, $pointsRule, $selectedSeasonId, $selectedSeason, $championPredictions) {
             $userPredictions = (clone $predictionsQuery)
                 ->where('predictions.user_id', $user->id)
                 ->get();
 
             $totalPoints = $userPredictions->sum('points_earned');
+
+            $cp = $championPredictions->get($user->id);
+            if ($cp && $selectedSeason && $cp->isCorrect($selectedSeason)) {
+                $totalPoints += ChampionPrediction::BONUS_POINTS;
+            }
+
             $predictionsCount = $userPredictions->count();
 
             $exactScores = $userPredictions->where('points_earned', $pointsRule?->exact_score ?? 5)->count();
@@ -67,8 +89,8 @@ class LeaderboardController extends Controller
             $avgPoints = $predictionsCount > 0 ? round($totalPoints / $predictionsCount, 2) : 0;
 
             // Calculate current streak
-            $currentStreak = $this->calculateCurrentStreak($user->id);
-            $bestStreak = $this->calculateBestStreak($user->id);
+            $currentStreak = $this->calculateCurrentStreak($user->id, $selectedSeasonId);
+            $bestStreak = $this->calculateBestStreak($user->id, $selectedSeasonId);
 
             return (object) [
                 'id' => $user->id,
@@ -88,14 +110,21 @@ class LeaderboardController extends Controller
         })->sortByDesc('total_points')->values();
 
         // Get available matchdays for filter
-        $matchdays = Game::distinct()->orderBy('matchday')->pluck('matchday');
+        $matchdays = Game::when($selectedSeasonId, function ($q) use ($selectedSeasonId) {
+                $q->where('season_id', $selectedSeasonId);
+            })
+            ->distinct()
+            ->orderBy('matchday')
+            ->pluck('matchday');
 
         // Calculate period leaders
-        $weekLeader = $this->getPeriodLeader('week');
-        $monthLeader = $this->getPeriodLeader('month');
+        $weekLeader = $this->getPeriodLeader('week', $selectedSeasonId);
+        $monthLeader = $this->getPeriodLeader('month', $selectedSeasonId);
 
         return view('leaderboard.index', compact(
             'leaderboard',
+            'seasons',
+            'selectedSeasonId',
             'period',
             'matchday',
             'matchdays',
@@ -105,13 +134,18 @@ class LeaderboardController extends Controller
         ));
     }
 
-    private function calculateCurrentStreak($userId)
+    private function calculateCurrentStreak($userId, $seasonId = null)
     {
-        $predictions = Prediction::query()
+        $query = Prediction::query()
             ->join('games', 'predictions.game_id', '=', 'games.id')
             ->where('predictions.user_id', $userId)
-            ->where('games.is_finished', true)
-            ->orderByDesc('games.match_date')
+            ->where('games.is_finished', true);
+
+        if ($seasonId) {
+            $query->where('games.season_id', $seasonId);
+        }
+
+        $predictions = $query->orderByDesc('games.match_date')
             ->select('predictions.points_earned')
             ->get();
 
@@ -127,13 +161,18 @@ class LeaderboardController extends Controller
         return $streak;
     }
 
-    private function calculateBestStreak($userId)
+    private function calculateBestStreak($userId, $seasonId = null)
     {
-        $predictions = Prediction::query()
+        $query = Prediction::query()
             ->join('games', 'predictions.game_id', '=', 'games.id')
             ->where('predictions.user_id', $userId)
-            ->where('games.is_finished', true)
-            ->orderBy('games.match_date')
+            ->where('games.is_finished', true);
+
+        if ($seasonId) {
+            $query->where('games.season_id', $seasonId);
+        }
+
+        $predictions = $query->orderBy('games.match_date')
             ->select('predictions.points_earned')
             ->get();
 
@@ -152,13 +191,17 @@ class LeaderboardController extends Controller
         return $bestStreak;
     }
 
-    private function getPeriodLeader($period)
+    private function getPeriodLeader($period, $seasonId = null)
     {
         $query = Prediction::query()
             ->join('games', 'predictions.game_id', '=', 'games.id')
             ->join('users', 'predictions.user_id', '=', 'users.id')
             ->where('games.is_finished', true)
             ->where('users.exclude_from_leaderboard', false);
+
+        if ($seasonId) {
+            $query->where('games.season_id', $seasonId);
+        }
 
         if ($period === 'week') {
             $query->whereBetween('games.match_date', [
@@ -195,6 +238,14 @@ class LeaderboardController extends Controller
 
         // Calculate statistics
         $totalPoints = $predictions->sum('points_earned');
+
+        $activeSeason = Season::where('is_active', true)->first();
+        if ($activeSeason) {
+            $cp = ChampionPrediction::where('user_id', $userId)->where('season_id', $activeSeason->id)->first();
+            if ($cp && $cp->isCorrect($activeSeason)) {
+                $totalPoints += ChampionPrediction::BONUS_POINTS;
+            }
+        }
         $predictionsCount = $predictions->count();
 
         $exactScores = $predictions->where('points_earned', $pointsRule?->exact_score ?? 5)->count();

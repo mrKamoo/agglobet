@@ -26,9 +26,17 @@
                     <x-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
                         Classement Joueurs
                     </x-nav-link>
-                    <x-nav-link :href="route('standings')" :active="request()->routeIs('standings')">
-                        Classement Ligue 1
-                    </x-nav-link>
+                    @if(isset($globalActiveSeason) && $globalActiveSeason)
+                        @if($globalActiveSeason->type === 'tournament')
+                            <x-nav-link :href="route('worldcup.index')" :active="request()->routeIs('worldcup.index')">
+                                {{ $globalActiveSeason->name }}
+                            </x-nav-link>
+                        @else
+                            <x-nav-link :href="route('standings')" :active="request()->routeIs('standings')">
+                                {{ $globalActiveSeason->name }}
+                            </x-nav-link>
+                        @endif
+                    @endif
                     @auth
                         @if(auth()->user()->is_admin)
                             <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
@@ -113,9 +121,17 @@
             <x-responsive-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
                 Classement Joueurs
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('standings')" :active="request()->routeIs('standings')">
-                Classement Ligue 1
-            </x-responsive-nav-link>
+            @if(isset($globalActiveSeason) && $globalActiveSeason)
+                @if($globalActiveSeason->type === 'tournament')
+                    <x-responsive-nav-link :href="route('worldcup.index')" :active="request()->routeIs('worldcup.index')">
+                        {{ $globalActiveSeason->name }}
+                    </x-responsive-nav-link>
+                @else
+                    <x-responsive-nav-link :href="route('standings')" :active="request()->routeIs('standings')">
+                        {{ $globalActiveSeason->name }}
+                    </x-responsive-nav-link>
+                @endif
+            @endif
             @auth
                 @if(auth()->user()->is_admin)
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">

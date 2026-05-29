@@ -51,11 +51,14 @@ class GameManagementController extends Controller
             'season_id' => 'required|exists:seasons,id',
             'home_team_id' => 'required|exists:teams,id',
             'away_team_id' => 'required|exists:teams,id|different:home_team_id',
-            'matchday' => 'required|integer|min:1|max:34',
+            'matchday' => 'required|integer|min:1',
             'match_date' => 'required|date',
+            'round' => 'nullable|string|max:100',
+            'group' => 'nullable|string|max:10',
+            'stadium' => 'nullable|string|max:255',
         ]);
 
-        Game::create($request->all());
+        Game::create($request->validated());
 
         return redirect()->route('admin.games.index')
             ->with('success', 'Match créé avec succès.');
@@ -74,11 +77,14 @@ class GameManagementController extends Controller
             'season_id' => 'required|exists:seasons,id',
             'home_team_id' => 'required|exists:teams,id',
             'away_team_id' => 'required|exists:teams,id|different:home_team_id',
-            'matchday' => 'required|integer|min:1|max:34',
+            'matchday' => 'required|integer|min:1',
             'match_date' => 'required|date',
+            'round' => 'nullable|string|max:100',
+            'group' => 'nullable|string|max:10',
+            'stadium' => 'nullable|string|max:255',
         ]);
 
-        $game->update($request->all());
+        $game->update($request->validated());
 
         return redirect()->route('admin.games.index')
             ->with('success', 'Match mis à jour avec succès.');

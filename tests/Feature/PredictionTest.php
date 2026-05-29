@@ -95,4 +95,157 @@ class PredictionTest extends TestCase
         $prediction->refresh();
         $this->assertEquals(5, $prediction->points_earned);
     }
+
+    public function test_user_can_predict_champion_before_deadline()
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $season = Season::factory()->create([
+            'name' => 'World Cup 2026',
+            'is_active' => true,
+            'type' => 'tournament',
+        ]);
+        $team = Team::factory()->create();
+
+        // Travel to before the deadline (e.g. 2026-05-17)
+        $this->travelTo(\Carbon\Carbon::create(2026, 5, 17, 12, 0, 0));
+
+        $response = $this->actingAs($user)->post(route('predictions.champion.store', $season), [
+            'team_id' => $team->id,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('champion_predictions', [
+            'user_id' => $user->id,
+            'season_id' => $season->id,
+            'team_id' => $team->id,
+        ]);
+    }
+
+    public function test_user_cannot_predict_champion_after_deadline()
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $season = Season::factory()->create([
+            'name' => 'World Cup 2026',
+            'is_active' => true,
+            'type' => 'tournament',
+        ]);
+        $team = Team::factory()->create();
+
+        // Travel to after the deadline (e.g. 2026-06-21)
+        $this->travelTo(\Carbon\Carbon::create(2026, 6, 21, 12, 0, 0));
+
+        $response = $this->actingAs($user)->post(route('predictions.champion.store', $season), [
+            'team_id' => $team->id,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('champion_predictions', [
+            'user_id' => $user->id,
+            'season_id' => $season->id,
+        ]);
+    }
+
+    public function test_user_cannot_change_champion_prediction()
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $season = Season::factory()->create([
+            'name' => 'World Cup 2026',
+            'is_active' => true,
+            'type' => 'tournament',
+        ]);
+        $team1 = Team::factory()->create();
+        $team2 = Team::factory()->create();
+
+        // Create initial prediction
+        \App\Models\ChampionPrediction::create([
+            'user_id' => $user->id,
+            'season_id' => $season->id,
+            'team_id' => $team1->id,
+        ]);
+
+        // Travel to before the deadline
+        $this->travelTo(\Carbon\Carbon::create(2026, 5, 17, 12, 0, 0));
+
+        // Attempt to change choice
+        $response = $this->actingAs($user)->post(route('predictions.champion.store', $season), [
+            'team_id' => $team2->id,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseHas('champion_predictions', [
+            'user_id' => $user->id,
+            'season_id' => $season->id,
+            'team_id' => $team1->id,
+        ]);
+        $this->assertDatabaseMissing('champion_predictions', [
+            'user_id' => $user->id,
+            'season_id' => $season->id,
+            'team_id' => $team2->id,
+        ]);
+    }
+
+    public function test_leaderboard_includes_30_bonus_points_when_champion_is_correct()
+    {
+        $user = User::factory()->create(['email_verified_at' => now(), 'exclude_from_leaderboard' => false]);
+        $team = Team::factory()->create();
+        
+        $season = Season::factory()->create([
+            'name' => 'World Cup 2026',
+            'is_active' => true,
+            'type' => 'tournament',
+            'winner_team_id' => $team->id,
+        ]);
+
+        \App\Models\ChampionPrediction::create([
+            'user_id' => $user->id,
+            'season_id' => $season->id,
+            'team_id' => $team->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('dashboard', ['season_id' => $season->id]));
+
+        // Load leaderboard index to see calculated points
+        $response = $this->actingAs($user)->get(route('dashboard', ['season_id' => $season->id]));
+
+        // Check using Controller instance or simple DB assertions to ensure total_points is correct
+        $leaderboardController = new \App\Http\Controllers\LeaderboardController();
+        $request = new \Illuminate\Http\Request(['season_id' => $season->id]);
+        
+        $view = $leaderboardController->index($request);
+        $leaderboardData = $view->getData()['leaderboard'];
+
+        $userRow = collect($leaderboardData)->firstWhere('id', $user->id);
+        $this->assertNotNull($userRow);
+        $this->assertEquals(30, $userRow->total_points);
+    }
+
+    public function test_world_cup_standings_page_renders_with_champion_prediction_widget()
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $season = Season::factory()->create([
+            'name' => 'World Cup 2026',
+            'is_active' => true,
+            'type' => 'tournament',
+        ]);
+        $team = Team::factory()->create();
+
+        // Create a game so team is in homeGames/awayGames
+        Game::factory()->create([
+            'season_id' => $season->id,
+            'home_team_id' => $team->id,
+            'match_date' => now()->addDay(),
+            'is_finished' => false,
+            'round' => 'Phase de groupes',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('worldcup.index', $season));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('wcTeams');
+        $response->assertViewHas('userChampionPrediction');
+        $response->assertViewHas('championDeadlinePassed');
+    }
 }

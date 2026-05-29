@@ -22,6 +22,9 @@ class GameFactory extends Factory
             'home_score' => null,
             'away_score' => null,
             'is_finished' => false,
+            'round' => null,
+            'group' => null,
+            'stadium' => null,
         ];
     }
 

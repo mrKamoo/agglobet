@@ -70,7 +70,7 @@
                                             Saison
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Journée
+                                            Journée / Phase
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Domicile
@@ -95,8 +95,15 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {{ $game->season->name }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $game->matchday }}
+                                            <td class="px-6 py-4 text-sm text-gray-500">
+                                                @if($game->round)
+                                                    <span class="font-medium text-gray-700">{{ $game->round }}</span>
+                                                    @if($game->group)
+                                                        <span class="ml-1 text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-semibold">Gr. {{ $game->group }}</span>
+                                                    @endif
+                                                @else
+                                                    J{{ $game->matchday }}
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                                 <div class="flex items-center justify-center">

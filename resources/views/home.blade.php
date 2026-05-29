@@ -10,7 +10,7 @@
             <!-- Hero Section -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900">
-                    <h3 class="text-2xl font-bold mb-4">Pronostiquez sur la Ligue 1 McDonald's</h3>
+                    <h3 class="text-2xl font-bold mb-4">Pronostiquez sur le football</h3>
                     <p class="text-gray-600 mb-4">
                         Rejoignez notre communauté de passionnés de football et testez vos compétences en pronostiquant les résultats des matchs tout au long de la saison !
                     </p>
@@ -56,6 +56,11 @@
                                                 <p class="font-semibold text-sm">{{ $game->awayTeam->name }}</p>
                                             </div>
                                         </div>
+                                        @if($game->stadium)
+                                            <div class="mt-2 text-center text-xs text-gray-500 font-medium">
+                                                📍 {{ $game->stadium }}
+                                            </div>
+                                        @endif
                                         @auth
                                             <div class="mt-4 text-center">
                                                 <a href="{{ route('games.index', ['matchday' => $game->matchday]) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
