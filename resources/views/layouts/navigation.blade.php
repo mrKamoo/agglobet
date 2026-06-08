@@ -5,14 +5,14 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('home') }}">
+                    <a href="{{ auth()->check() ? route('dashboard') : route('home') }}">
                         <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('home')" :active="request()->routeIs('home')">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         Accueil
                     </x-nav-link>
                     @auth
@@ -25,6 +25,9 @@
                     @endauth
                     <x-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
                         Classement Joueurs
+                    </x-nav-link>
+                    <x-nav-link :href="route('stats.index')" :active="request()->routeIs('stats.*')">
+                        Statistiques
                     </x-nav-link>
                     @if(isset($globalActiveSeason) && $globalActiveSeason)
                         @if($globalActiveSeason->type === 'tournament')
@@ -120,6 +123,9 @@
             @endauth
             <x-responsive-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
                 Classement Joueurs
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('stats.index')" :active="request()->routeIs('stats.*')">
+                Statistiques
             </x-responsive-nav-link>
             @if(isset($globalActiveSeason) && $globalActiveSeason)
                 @if($globalActiveSeason->type === 'tournament')

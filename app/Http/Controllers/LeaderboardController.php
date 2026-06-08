@@ -61,7 +61,7 @@ class LeaderboardController extends Controller
 
         // Preload all champion predictions for this season indexed by user_id
         $championPredictions = $selectedSeasonId
-            ? ChampionPrediction::where('season_id', $selectedSeasonId)->get()->keyBy('user_id')
+            ? ChampionPrediction::with('team')->where('season_id', $selectedSeasonId)->get()->keyBy('user_id')
             : collect();
 
         // Get detailed statistics for each user
@@ -106,6 +106,7 @@ class LeaderboardController extends Controller
                 'avg_points' => $avgPoints,
                 'current_streak' => $currentStreak,
                 'best_streak' => $bestStreak,
+                'champion_team' => $cp?->team,
             ];
         })->sortByDesc('total_points')->values();
 

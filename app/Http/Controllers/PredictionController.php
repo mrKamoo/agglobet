@@ -76,6 +76,13 @@ class PredictionController extends Controller
             'team_id' => 'required|exists:teams,id',
         ]);
 
+        if (!$season->is_active || $season->winner_team_id !== null) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Les pronostics sont fermés pour cette saison.'], 422);
+            }
+            return back()->with('error', 'Les pronostics sont fermés pour cette saison.');
+        }
+
         $deadline = Carbon::create(2026, 6, 20, 23, 59, 59, 'Europe/Paris');
         if (Carbon::now('Europe/Paris')->greaterThan($deadline)) {
             if ($request->wantsJson()) {

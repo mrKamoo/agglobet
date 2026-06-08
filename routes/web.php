@@ -13,8 +13,6 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 Route::get('/standings', [StandingsController::class, 'index'])->name('standings');
 Route::get('/world-cup', [StandingsController::class, 'worldCup'])->name('worldcup.index');
-Route::get('/api/users/{user}/stats', [LeaderboardController::class, 'userStats'])->name('api.users.stats');
-
 // Vue.js test route (can be removed after testing)
 Route::get('/vue-test', function () {
     return view('vue-test');
@@ -23,6 +21,10 @@ Route::get('/vue-test', function () {
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/stats', [App\Http\Controllers\StatsController::class, 'index'])->name('stats.index');
+
+    // User stats API (auth required to prevent unauthenticated enumeration)
+    Route::get('/api/users/{user}/stats', [LeaderboardController::class, 'userStats'])->name('api.users.stats');
 
     // Games
     Route::get('/games', [GameController::class, 'index'])->name('games.index');

@@ -120,10 +120,17 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
                                                     <div>
-                                                        <div class="text-sm font-medium text-gray-900">
-                                                            {{ $user->name }}
+                                                        <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                                                            <span>{{ $user->name }}</span>
+                                                            @if($user->champion_team)
+                                                                @if($user->champion_team->logo)
+                                                                    <img src="{{ $user->champion_team->logo }}" alt="{{ $user->champion_team->name }}" class="h-5 w-5 object-contain" title="Vainqueur final pronostiqué : {{ $user->champion_team->name }}">
+                                                                @else
+                                                                    <span class="text-xs text-gray-500" title="Vainqueur final pronostiqué : {{ $user->champion_team->name }}">({{ $user->champion_team->short_name }})</span>
+                                                                @endif
+                                                            @endif
                                                             @if(auth()->id() == $user->id)
-                                                                <span class="ml-2 text-xs text-blue-600">(Vous)</span>
+                                                                <span class="text-xs text-blue-600">(Vous)</span>
                                                             @endif
                                                         </div>
                                                         <div class="flex gap-1 mt-1">
