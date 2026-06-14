@@ -29,6 +29,17 @@ class Game extends Model
         'is_finished' => 'boolean',
     ];
 
+    /**
+     * Get and set the match date in Europe/Paris timezone.
+     */
+    protected function matchDate(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn ($value) => $value ? \Carbon\Carbon::parse($value, 'Europe/Paris') : null,
+            set: fn ($value) => $value ? \Carbon\Carbon::parse($value)->setTimezone('Europe/Paris')->format('Y-m-d H:i:s') : null,
+        );
+    }
+
     public function isGroupStage(): bool
     {
         return $this->round === 'Phase de groupes';

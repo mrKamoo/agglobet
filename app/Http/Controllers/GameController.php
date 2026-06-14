@@ -50,7 +50,7 @@ class GameController extends Controller
         // Determine next matchday (upcoming matches)
         $nextMatchday = Game::where('season_id', $activeSeason->id)
             ->where('is_finished', false)
-            ->where('match_date', '>=', now())
+            ->where('match_date', '>=', \Carbon\Carbon::now('Europe/Paris'))
             ->orderBy('match_date', 'asc')
             ->value('matchday');
 

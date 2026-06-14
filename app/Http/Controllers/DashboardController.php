@@ -31,7 +31,7 @@ class DashboardController extends Controller
 
         // 2. Next Match to Predict
         // Find the next game that hasn't started yet
-        $nextGame = Game::where('match_date', '>', Carbon::now())
+        $nextGame = Game::where('match_date', '>', Carbon::now('Europe/Paris'))
             ->orderBy('match_date', 'asc')
             ->with(['homeTeam', 'awayTeam'])
             ->first();

@@ -225,6 +225,8 @@ class LeaderboardController extends Controller
     public function userStats($userId)
     {
         $user = User::findOrFail($userId);
+
+        abort_if(auth()->id() !== $user->id && ! auth()->user()->is_admin, 403);
         $pointsRule = PointsRule::where('is_active', true)->first();
 
         // Get all predictions with games
