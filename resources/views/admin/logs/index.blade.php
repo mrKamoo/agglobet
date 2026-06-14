@@ -33,7 +33,7 @@
                                 @forelse($apiLogs as $log)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $log->created_at->format('d/m/Y H:i:s') }}
+                                            {{ $log->created_at->setTimezone('Europe/Paris')->format('d/m/Y H:i:s') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             @if($log->type == 'matches')
@@ -110,7 +110,7 @@
                                 @forelse($predictions as $prediction)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $prediction->updated_at->format('d/m/Y H:i:s') }}
+                                            {{ $prediction->updated_at->setTimezone('Europe/Paris')->format('d/m/Y H:i:s') }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
                                             {{ $prediction->user->name ?? 'Utilisateur supprimé' }}
