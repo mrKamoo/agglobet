@@ -70,6 +70,7 @@ class ResultController extends Controller
                 $points = $activeRule->correct_winner;
             }
 
+            $prediction->timestamps = false;
             $prediction->update(['points_earned' => $points]);
         }
     }

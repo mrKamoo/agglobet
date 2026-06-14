@@ -302,6 +302,7 @@ class FootballDataService
                 $points = $activeRule->correct_winner;
             }
 
+            $prediction->timestamps = false;
             $prediction->update(['points_earned' => $points]);
         }
     }
