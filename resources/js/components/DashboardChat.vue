@@ -39,10 +39,9 @@
       </div>
 
       <div 
-        v-else 
         v-for="msg in messages" 
         :key="msg.id" 
-        class="flex flex-col"
+        class="flex flex-col group relative"
         :class="msg.user_id === currentUserId ? 'items-end' : 'items-start'"
       >
         <!-- Message metadata -->
@@ -65,16 +64,76 @@
           </span>
         </div>
 
-        <!-- Message bubble -->
+        <!-- Message bubble & reaction trigger -->
         <div 
-          class="max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all duration-200 hover:shadow-md whitespace-pre-wrap break-words"
-          :class="[
-            msg.user_id === currentUserId 
-              ? 'bg-indigo-600 text-white rounded-tr-none' 
-              : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
-          ]"
+          class="flex items-center space-x-2 max-w-[85%] relative"
+          :class="msg.user_id === currentUserId ? 'flex-row-reverse space-x-reverse' : 'flex-row'"
         >
-          {{ msg.message }}
+          <!-- Bubble -->
+          <div 
+            class="rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all duration-200 hover:shadow-md whitespace-pre-wrap break-words"
+            :class="[
+              msg.user_id === currentUserId 
+                ? 'bg-indigo-600 text-white rounded-tr-none' 
+                : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+            ]"
+          >
+            {{ msg.message }}
+          </div>
+
+          <!-- Add Reaction Button (visible on hover) -->
+          <div class="relative">
+            <button 
+              type="button" 
+              @click.stop="toggleReactionMenu(msg.id)"
+              class="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-white hover:bg-indigo-50 border border-gray-200 rounded-full text-gray-400 hover:text-indigo-600 focus:outline-none shadow-sm cursor-pointer shrink-0"
+              title="Réagir"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </button>
+
+            <!-- Reaction Picker Popover -->
+            <div 
+              v-if="activeReactionMenuMessageId === msg.id"
+              class="absolute bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-full shadow-lg px-2 py-1 flex items-center space-x-1"
+              :class="msg.user_id === currentUserId ? 'right-0' : 'left-0'"
+            >
+              <button 
+                v-for="emoji in reactionEmojis" 
+                :key="emoji"
+                type="button"
+                @click="toggleReaction(msg, emoji)"
+                class="hover:scale-125 transition-transform p-0.5 text-base focus:outline-none cursor-pointer"
+              >
+                {{ emoji }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rendered reactions list below bubble -->
+        <div 
+          v-if="msg.reactions && msg.reactions.length > 0" 
+          class="flex flex-wrap gap-1 mt-1 px-1"
+        >
+          <button
+            v-for="group in getGroupedReactions(msg)"
+            :key="group.emoji"
+            type="button"
+            @click="toggleReaction(msg, group.emoji)"
+            class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-semibold border transition-all cursor-pointer"
+            :class="[
+              group.userReacted 
+                ? 'bg-indigo-50 border-indigo-300 text-indigo-700 hover:bg-indigo-100' 
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+            ]"
+            :title="`Réagi par ${group.count} participant(s)`"
+          >
+            <span>{{ group.emoji }}</span>
+            <span class="text-[10px]">{{ group.count }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -170,6 +229,8 @@ export default {
       pollingInterval: null,
       userScrolledUp: false,
       showEmojiPicker: false,
+      activeReactionMenuMessageId: null,
+      reactionEmojis: ['👍', '❤️', '😂', '🔥', '👏', '⚽'],
       popularEmojis: [
         '😀', '😂', '😉', '😍', '😎', '😮',
         '😢', '😡', '😱', '👍', '👎', '👏',
@@ -294,11 +355,50 @@ export default {
         textarea.setSelectionRange(newCursorPos, newCursorPos);
       });
     },
+    toggleReactionMenu(messageId) {
+      if (this.activeReactionMenuMessageId === messageId) {
+        this.activeReactionMenuMessageId = null;
+      } else {
+        this.activeReactionMenuMessageId = messageId;
+      }
+    },
+    async toggleReaction(message, emoji) {
+      this.activeReactionMenuMessageId = null;
+      try {
+        const response = await axios.post(`/api/chat-messages/${message.id}/react`, {
+          emoji: emoji
+        });
+        message.reactions = response.data;
+      } catch (error) {
+        console.error("Erreur lors de la réaction au message:", error);
+      }
+    },
+    getGroupedReactions(message) {
+      if (!message.reactions) return [];
+      
+      const groups = {};
+      message.reactions.forEach(r => {
+        if (!groups[r.emoji]) {
+          groups[r.emoji] = {
+            emoji: r.emoji,
+            count: 0,
+            userReacted: false
+          };
+        }
+        groups[r.emoji].count++;
+        if (r.user_id === this.currentUserId) {
+          groups[r.emoji].userReacted = true;
+        }
+      });
+      
+      return Object.values(groups);
+    },
     handleOutsideClick(event) {
       const picker = this.$refs.emojiPickerContainer;
       if (picker && !picker.contains(event.target)) {
         this.closeEmojiPicker();
       }
+      this.activeReactionMenuMessageId = null;
     },
     formatTime(dateString) {
       if (!dateString) return '';

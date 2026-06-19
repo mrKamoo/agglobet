@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ChatMessage extends Model
+class ChatMessageReaction extends Model
 {
     protected $fillable = [
+        'chat_message_id',
         'user_id',
-        'message',
+        'emoji',
     ];
 
     public function user()
@@ -16,8 +17,8 @@ class ChatMessage extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function reactions()
+    public function chatMessage()
     {
-        return $this->hasMany(ChatMessageReaction::class);
+        return $this->belongsTo(ChatMessage::class);
     }
 }
