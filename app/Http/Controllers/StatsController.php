@@ -128,6 +128,52 @@ class StatsController extends Controller
                 ->get();
         }
 
+        // Tendances pour les 5 prochains matchs
+        $nextGames = \App\Models\Game::where('match_date', '>', \Carbon\Carbon::now('Europe/Paris'))
+            ->orderBy('match_date', 'asc')
+            ->with(['homeTeam', 'awayTeam', 'predictions'])
+            ->take(5)
+            ->get();
+
+        $nextGamesStats = $nextGames->map(function ($game) {
+            $predictions = $game->predictions;
+            $total = $predictions->count();
+
+            if ($total > 0) {
+                $homeWins = $predictions->filter(fn($p) => $p->home_score > $p->away_score)->count();
+                $draws = $predictions->filter(fn($p) => $p->home_score == $p->away_score)->count();
+                $awayWins = $predictions->filter(fn($p) => $p->home_score < $p->away_score)->count();
+
+                $homePercent = round(($homeWins / $total) * 100);
+                $drawPercent = round(($draws / $total) * 100);
+                $awayPercent = round(($awayWins / $total) * 100);
+
+                // Normaliser pour que la somme fasse exactement 100%
+                $diff = 100 - ($homePercent + $drawPercent + $awayPercent);
+                if ($diff !== 0) {
+                    if ($homePercent >= $drawPercent && $homePercent >= $awayPercent) {
+                        $homePercent += $diff;
+                    } elseif ($drawPercent >= $homePercent && $drawPercent >= $awayPercent) {
+                        $drawPercent += $diff;
+                    } else {
+                        $awayPercent += $diff;
+                    }
+                }
+            } else {
+                $homePercent = 0;
+                $drawPercent = 0;
+                $awayPercent = 0;
+            }
+
+            return (object) [
+                'game' => $game,
+                'total_predictions' => $total,
+                'home_percent' => $homePercent,
+                'draw_percent' => $drawPercent,
+                'away_percent' => $awayPercent,
+            ];
+        });
+
         return view('stats.index', compact(
             'seasons',
             'selectedSeasonId',
@@ -149,7 +195,8 @@ class StatsController extends Controller
             'mostPredictedWins',
             'mostPredictedLosses',
             'championStats',
-            'pointsRule'
+            'pointsRule',
+            'nextGamesStats'
         ));
     }
 }

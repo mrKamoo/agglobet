@@ -143,6 +143,90 @@
                 </div>
             @endif
 
+            <!-- Tendances des prochains matchs -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h4 class="text-base font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <span class="text-blue-500 text-lg">🔮</span> Tendances des prochains matchs (Pronostics de la communauté)
+                </h4>
+                
+                @if($nextGamesStats->count() > 0)
+                    <div class="space-y-6">
+                        @foreach($nextGamesStats as $stat)
+                            <div class="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                                <!-- Match Info Header -->
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 text-xs text-gray-500 gap-1">
+                                    <div>
+                                        <span class="font-semibold text-gray-700">Journée {{ $stat->game->matchday }}</span>
+                                        • {{ $stat->game->match_date->format('d/m/Y à H:i') }}
+                                    </div>
+                                    <div class="font-medium">
+                                        {{ $stat->total_predictions }} {{ $stat->total_predictions > 1 ? 'pronostics enregistrés' : 'pronostic enregistré' }}
+                                    </div>
+                                </div>
+
+                                <!-- Matchup & Progress Bar -->
+                                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                    <!-- Teams names/logos -->
+                                    <div class="md:col-span-5 flex items-center justify-between font-semibold text-sm text-gray-800">
+                                        <!-- Home Team -->
+                                        <div class="flex items-center gap-2 flex-1 justify-end pr-2 text-right">
+                                            <span>{{ $stat->game->homeTeam->short_name ?? $stat->game->homeTeam->name }}</span>
+                                            @if($stat->game->homeTeam->logo)
+                                                <img src="{{ $stat->game->homeTeam->logo }}" alt="{{ $stat->game->homeTeam->name }}" class="w-6 h-6 object-contain">
+                                            @endif
+                                        </div>
+                                        <span class="text-gray-400 font-bold text-xs px-2 shrink-0">VS</span>
+                                        <!-- Away Team -->
+                                        <div class="flex items-center gap-2 flex-1 pl-2 text-left">
+                                            @if($stat->game->awayTeam->logo)
+                                                <img src="{{ $stat->game->awayTeam->logo }}" alt="{{ $stat->game->awayTeam->name }}" class="w-6 h-6 object-contain">
+                                            @endif
+                                            <span>{{ $stat->game->awayTeam->short_name ?? $stat->game->awayTeam->name }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Segmented Progress Bar -->
+                                    <div class="md:col-span-7 flex flex-col space-y-1.5">
+                                        @if($stat->total_predictions > 0)
+                                            <!-- Progress bar itself -->
+                                            <div class="w-full bg-gray-100 rounded-full h-3 flex overflow-hidden">
+                                                <div 
+                                                    class="bg-blue-500 h-3 transition-all duration-500" 
+                                                    style="width: {{ $stat->home_percent }}%"
+                                                    title="Victoire Domicile: {{ $stat->home_percent }}%"
+                                                ></div>
+                                                <div 
+                                                    class="bg-gray-300 h-3 transition-all duration-500" 
+                                                    style="width: {{ $stat->draw_percent }}%"
+                                                    title="Match Nul: {{ $stat->draw_percent }}%"
+                                                ></div>
+                                                <div 
+                                                    class="bg-indigo-500 h-3 transition-all duration-500" 
+                                                    style="width: {{ $stat->away_percent }}%"
+                                                    title="Victoire Extérieur: {{ $stat->away_percent }}%"
+                                                ></div>
+                                            </div>
+                                            <!-- Percentages labels -->
+                                            <div class="flex justify-between text-[11px] font-semibold">
+                                                <span class="text-blue-600">Victoire Domicile : {{ $stat->home_percent }}%</span>
+                                                <span class="text-gray-500">Nul : {{ $stat->draw_percent }}%</span>
+                                                <span class="text-indigo-600">Victoire Extérieur : {{ $stat->away_percent }}%</span>
+                                            </div>
+                                        @else
+                                            <div class="w-full bg-gray-100 rounded-full h-3 flex items-center justify-center text-[10px] text-gray-400 font-medium">
+                                                Aucun pronostic joué
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-gray-500 text-center py-6">Aucun match à venir disponible.</p>
+                @endif
+            </div>
+
             <!-- Teams Preferences Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Most Predicted Wins -->
