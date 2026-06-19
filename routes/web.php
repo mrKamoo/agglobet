@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/chat-messages', [\App\Http\Controllers\ChatMessageController::class, 'index'])->name('api.chat.index');
     Route::post('/api/chat-messages', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('api.chat.store');
     Route::post('/api/chat-messages/{chatMessage}/react', [\App\Http\Controllers\ChatMessageController::class, 'react'])->name('api.chat.react');
+    Route::delete('/api/chat-messages/{chatMessage}', [\App\Http\Controllers\ChatMessageController::class, 'destroy'])->name('api.chat.destroy');
 
     // Games
     Route::get('/games', [GameController::class, 'index'])->name('games.index');

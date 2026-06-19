@@ -91,34 +91,50 @@
             {{ msg.message }}
           </div>
 
-          <!-- Add Reaction Button (visible on hover) -->
-          <div class="relative">
+          <!-- Add Reaction & Delete Buttons (visible on hover) -->
+          <div class="flex items-center space-x-1 shrink-0">
+            <!-- Delete Button (Only for Admins) -->
             <button 
+              v-if="currentUserIsAdmin"
               type="button" 
-              @click.stop="toggleReactionMenu(msg.id)"
-              class="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-white hover:bg-indigo-50 border border-gray-200 rounded-full text-gray-400 hover:text-indigo-600 focus:outline-none shadow-sm cursor-pointer shrink-0"
-              title="Réagir"
+              @click.stop="confirmDeleteMessage(msg)"
+              class="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-white hover:bg-red-50 border border-gray-200 hover:border-red-200 rounded-full text-gray-400 hover:text-red-600 focus:outline-none shadow-sm cursor-pointer"
+              title="Supprimer le message"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
               </svg>
             </button>
 
-            <!-- Reaction Picker Popover -->
-            <div 
-              v-if="activeReactionMenuMessageId === msg.id"
-              class="absolute bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-full shadow-lg px-2 py-1 flex items-center space-x-1"
-              :class="msg.user_id === currentUserId ? 'right-0' : 'left-0'"
-            >
+            <!-- Add Reaction Button -->
+            <div class="relative">
               <button 
-                v-for="emoji in reactionEmojis" 
-                :key="emoji"
-                type="button"
-                @click="toggleReaction(msg, emoji)"
-                class="hover:scale-125 transition-transform p-0.5 text-base focus:outline-none cursor-pointer"
+                type="button" 
+                @click.stop="toggleReactionMenu(msg.id)"
+                class="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-white hover:bg-indigo-50 border border-gray-200 rounded-full text-gray-400 hover:text-indigo-600 focus:outline-none shadow-sm cursor-pointer"
+                title="Réagir"
               >
-                {{ emoji }}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
               </button>
+
+              <!-- Reaction Picker Popover -->
+              <div 
+                v-if="activeReactionMenuMessageId === msg.id"
+                class="absolute bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-full shadow-lg px-2 py-1 flex items-center space-x-1"
+                :class="msg.user_id === currentUserId ? 'right-0' : 'left-0'"
+              >
+                <button 
+                  v-for="emoji in reactionEmojis" 
+                  :key="emoji"
+                  type="button"
+                  @click="toggleReaction(msg, emoji)"
+                  class="hover:scale-125 transition-transform p-0.5 text-base focus:outline-none cursor-pointer"
+                >
+                  {{ emoji }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -228,6 +244,10 @@ export default {
     currentUserId: {
       type: Number,
       required: true
+    },
+    currentUserIsAdmin: {
+      type: Boolean,
+      default: false
     },
     height: {
       type: String,
@@ -413,6 +433,17 @@ export default {
         this.closeEmojiPicker();
       }
       this.activeReactionMenuMessageId = null;
+    },
+    async confirmDeleteMessage(message) {
+      if (!confirm("Voulez-vous vraiment supprimer ce message ?")) return;
+      
+      try {
+        await axios.delete(`/api/chat-messages/${message.id}`);
+        this.messages = this.messages.filter(m => m.id !== message.id);
+      } catch (error) {
+        console.error("Erreur lors de la suppression du message:", error);
+        alert("Impossible de supprimer le message. Veuillez réessayer.");
+      }
     },
     formatTime(dateString) {
       if (!dateString) return '';

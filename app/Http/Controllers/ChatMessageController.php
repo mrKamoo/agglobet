@@ -117,4 +117,13 @@ class ChatMessageController extends Controller
         // Retourner l'ensemble des réactions mises à jour pour ce message
         return response()->json($chatMessage->reactions()->get());
     }
+
+    public function destroy(ChatMessage $chatMessage)
+    {
+        abort_if(!Auth::user()->is_admin, 403, 'Unauthorized action.');
+
+        $chatMessage->delete();
+
+        return response()->json(['success' => true], 200);
+    }
 }
