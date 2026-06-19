@@ -128,9 +128,6 @@
                             @endif
                         </div>
                     </div>
-
-                    <!-- Chat Component -->
-                    <dashboard-chat :current-user-id="{{ auth()->id() }}" :current-user-is-admin="{{ auth()->user()->is_admin ? 'true' : 'false' }}" height="h-[450px]"></dashboard-chat>
                 </div>
 
                 <!-- Sidebar: Recent Activity -->
