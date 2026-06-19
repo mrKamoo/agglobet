@@ -82,8 +82,41 @@
     <!-- Chat input area -->
     <div class="p-4 bg-white border-t border-gray-100 shrink-0">
       <form @submit.prevent="sendMessage" class="flex flex-col space-y-2">
-        <div class="flex items-stretch space-x-2">
+        <div class="flex items-stretch space-x-2 relative">
+          <!-- Emoji Picker Toggle & Popover -->
+          <div ref="emojiPickerContainer" class="relative flex items-center">
+            <button 
+              type="button"
+              @click.stop="toggleEmojiPicker"
+              class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none"
+              title="Ajouter un emoji"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </button>
+
+            <!-- Emoji Picker Popover -->
+            <div 
+              v-if="showEmojiPicker"
+              class="absolute bottom-full mb-2 left-0 bg-white border border-gray-200 rounded-xl shadow-xl p-3 z-50 w-64"
+            >
+              <div class="grid grid-cols-6 gap-1.5">
+                <button 
+                  v-for="emoji in popularEmojis" 
+                  :key="emoji"
+                  type="button"
+                  @click="addEmoji(emoji)"
+                  class="text-xl p-1 hover:bg-gray-100 rounded transition-colors text-center focus:outline-none"
+                >
+                  {{ emoji }}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <textarea 
+            ref="messageTextarea"
             v-model="newMessage"
             rows="1"
             class="flex-1 resize-none rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 placeholder-gray-400 transition-colors"
@@ -91,6 +124,7 @@
             maxlength="1000"
             @keydown.enter.prevent="handleEnter"
             :disabled="sending"
+            @focus="closeEmojiPicker"
           ></textarea>
 
           <button 
@@ -134,7 +168,15 @@ export default {
       loading: true,
       sending: false,
       pollingInterval: null,
-      userScrolledUp: false
+      userScrolledUp: false,
+      showEmojiPicker: false,
+      popularEmojis: [
+        '😀', '😂', '😉', '😍', '😎', '😮',
+        '😢', '😡', '😱', '👍', '👎', '👏',
+        '🙌', '👊', '🤝', '🔥', '💪', '🎉',
+        '🥳', '⚽', '🏆', '🎯', '🥅', '🍺',
+        '❤️', '⚡', '💡', '🤫', '👀', '🚀'
+      ]
     };
   },
   mounted() {
@@ -142,11 +184,15 @@ export default {
     
     // Configurer le polling (toutes les 5 secondes)
     this.pollingInterval = setInterval(this.fetchMessages, 5000);
+    
+    // Clic en dehors pour fermer l'emoji picker
+    document.addEventListener('click', this.handleOutsideClick);
   },
   beforeUnmount() {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
     }
+    document.removeEventListener('click', this.handleOutsideClick);
   },
   methods: {
     async fetchMessages() {
@@ -179,6 +225,7 @@ export default {
       this.sending = true;
       const messageToSend = trimmed;
       this.newMessage = ''; // Vider le champ immédiatement pour une sensation de réactivité
+      this.closeEmojiPicker();
 
       try {
         const response = await axios.post('/api/chat-messages', {
@@ -220,6 +267,38 @@ export default {
       // Si l'utilisateur est à plus de 50px du bas, on considère qu'il a scrollé vers le haut
       const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
       this.userScrolledUp = !isAtBottom;
+    },
+    toggleEmojiPicker() {
+      this.showEmojiPicker = !this.showEmojiPicker;
+    },
+    closeEmojiPicker() {
+      this.showEmojiPicker = false;
+    },
+    addEmoji(emoji) {
+      const textarea = this.$refs.messageTextarea;
+      if (!textarea) {
+        this.newMessage += emoji;
+        return;
+      }
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = this.newMessage;
+      
+      this.newMessage = text.substring(0, start) + emoji + text.substring(end);
+      
+      // Focus et repositionnement du curseur
+      this.$nextTick(() => {
+        textarea.focus();
+        const newCursorPos = start + emoji.length;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      });
+    },
+    handleOutsideClick(event) {
+      const picker = this.$refs.emojiPickerContainer;
+      if (picker && !picker.contains(event.target)) {
+        this.closeEmojiPicker();
+      }
     },
     formatTime(dateString) {
       if (!dateString) return '';
