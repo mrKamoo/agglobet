@@ -21,6 +21,9 @@ Route::get('/vue-test', function () {
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/chat', function () {
+        return view('chat');
+    })->name('chat');
     Route::get('/stats', [App\Http\Controllers\StatsController::class, 'index'])->name('stats.index');
 
     // User stats API (auth required to prevent unauthenticated enumeration)

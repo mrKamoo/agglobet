@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100 flex flex-col h-[500px]">
+  <div 
+    class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-100 flex flex-col"
+    :class="[height]"
+  >
     <!-- Chat Header -->
     <div class="px-6 py-4 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white flex justify-between items-center shrink-0">
       <div class="flex items-center space-x-2">
@@ -218,6 +221,10 @@ export default {
     currentUserId: {
       type: Number,
       required: true
+    },
+    height: {
+      type: String,
+      default: 'h-[500px]'
     }
   },
   data() {

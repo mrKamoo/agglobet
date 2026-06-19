@@ -22,6 +22,9 @@
                         <x-nav-link :href="route('predictions.mine')" :active="request()->routeIs('predictions.*')">
                             Mes Pronostics
                         </x-nav-link>
+                        <x-nav-link :href="route('chat')" :active="request()->routeIs('chat')">
+                            Discussion
+                        </x-nav-link>
                     @endauth
                     <x-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
                         Classement Joueurs
@@ -119,6 +122,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('predictions.mine')" :active="request()->routeIs('predictions.*')">
                     Mes Pronostics
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('chat')" :active="request()->routeIs('chat')">
+                    Discussion
                 </x-responsive-nav-link>
             @endauth
             <x-responsive-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
