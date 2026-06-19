@@ -26,6 +26,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // User stats API (auth required to prevent unauthenticated enumeration)
     Route::get('/api/users/{user}/stats', [LeaderboardController::class, 'userStats'])->name('api.users.stats');
 
+    // Chat API
+    Route::get('/api/chat-messages', [\App\Http\Controllers\ChatMessageController::class, 'index'])->name('api.chat.index');
+    Route::post('/api/chat-messages', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('api.chat.store');
+
     // Games
     Route::get('/games', [GameController::class, 'index'])->name('games.index');
     Route::get('/games/{game}', [GameController::class, 'show'])->name('games.show');

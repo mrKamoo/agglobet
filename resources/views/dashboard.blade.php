@@ -8,7 +8,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div id="app" class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
             <!-- Top Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -60,7 +60,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Content: Next Match -->
-                <div class="lg:col-span-2">
+                <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 border-b border-gray-200">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Prochain Match</h3>
@@ -128,6 +128,9 @@
                             @endif
                         </div>
                     </div>
+
+                    <!-- Chat Component -->
+                    <dashboard-chat :current-user-id="{{ auth()->id() }}"></dashboard-chat>
                 </div>
 
                 <!-- Sidebar: Recent Activity -->
