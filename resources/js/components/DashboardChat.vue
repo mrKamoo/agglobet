@@ -61,6 +61,13 @@
           >
             Admin
           </span>
+          <span 
+            v-if="msg.user.rank !== undefined && msg.user.points !== undefined"
+            class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-750 border border-indigo-100"
+            :title="`Rang: ${msg.user.rank}e | Total: ${msg.user.points} points`"
+          >
+            {{ msg.user.rank }}ᵉ • {{ msg.user.points }} pts
+          </span>
           <span class="text-gray-400">•</span>
           <span class="text-gray-400" :title="formatFullDate(msg.created_at)">
             {{ formatTime(msg.created_at) }}
