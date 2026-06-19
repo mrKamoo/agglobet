@@ -185,36 +185,43 @@
                                         </div>
                                     </div>
 
-                                    <!-- Segmented Progress Bar -->
-                                    <div class="md:col-span-7 flex flex-col space-y-1.5">
+                                    <!-- 1X2 Predictions Cards -->
+                                    <div class="md:col-span-7">
                                         @if($stat->total_predictions > 0)
-                                            <!-- Progress bar itself -->
-                                            <div class="w-full bg-gray-100 rounded-full h-3 flex overflow-hidden">
-                                                <div 
-                                                    class="bg-blue-500 h-3 transition-all duration-500" 
-                                                    style="width: {{ $stat->home_percent }}%"
-                                                    title="Victoire Domicile: {{ $stat->home_percent }}%"
-                                                ></div>
-                                                <div 
-                                                    class="bg-gray-300 h-3 transition-all duration-500" 
-                                                    style="width: {{ $stat->draw_percent }}%"
-                                                    title="Match Nul: {{ $stat->draw_percent }}%"
-                                                ></div>
-                                                <div 
-                                                    class="bg-indigo-500 h-3 transition-all duration-500" 
-                                                    style="width: {{ $stat->away_percent }}%"
-                                                    title="Victoire Extérieur: {{ $stat->away_percent }}%"
-                                                ></div>
-                                            </div>
-                                            <!-- Percentages labels -->
-                                            <div class="flex justify-between text-[11px] font-semibold">
-                                                <span class="text-blue-600">Victoire Domicile : {{ $stat->home_percent }}%</span>
-                                                <span class="text-gray-500">Nul : {{ $stat->draw_percent }}%</span>
-                                                <span class="text-indigo-600">Victoire Extérieur : {{ $stat->away_percent }}%</span>
+                                            @php
+                                                $maxPercent = max($stat->home_percent, $stat->draw_percent, $stat->away_percent);
+                                            @endphp
+                                            <div class="grid grid-cols-3 gap-3">
+                                                <!-- Home Win Box -->
+                                                <div class="p-2.5 rounded-xl border transition-all {{ $stat->home_percent == $maxPercent ? 'bg-blue-50 border-blue-200 text-blue-900 shadow-sm font-semibold' : 'bg-gray-50/50 border-gray-100 text-gray-500' }}">
+                                                    <div class="text-[10px] uppercase font-bold tracking-wider mb-1 block">1 (Domicile)</div>
+                                                    <div class="text-lg font-extrabold">{{ $stat->home_percent }}%</div>
+                                                    <div class="w-full bg-gray-200/60 rounded-full h-1 mt-1.5 overflow-hidden">
+                                                        <div class="bg-blue-500 h-1 rounded-full" style="width: {{ $stat->home_percent }}%"></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Draw Box -->
+                                                <div class="p-2.5 rounded-xl border transition-all {{ $stat->draw_percent == $maxPercent ? 'bg-amber-50 border-amber-200 text-amber-900 shadow-sm font-semibold' : 'bg-gray-50/50 border-gray-100 text-gray-500' }}">
+                                                    <div class="text-[10px] uppercase font-bold tracking-wider mb-1 block">N (Nul)</div>
+                                                    <div class="text-lg font-extrabold">{{ $stat->draw_percent }}%</div>
+                                                    <div class="w-full bg-gray-200/60 rounded-full h-1 mt-1.5 overflow-hidden">
+                                                        <div class="bg-amber-500 h-1 rounded-full" style="width: {{ $stat->draw_percent }}%"></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Away Win Box -->
+                                                <div class="p-2.5 rounded-xl border transition-all {{ $stat->away_percent == $maxPercent ? 'bg-indigo-50 border-indigo-200 text-indigo-900 shadow-sm font-semibold' : 'bg-gray-50/50 border-gray-100 text-gray-500' }}">
+                                                    <div class="text-[10px] uppercase font-bold tracking-wider mb-1 block">2 (Extérieur)</div>
+                                                    <div class="text-lg font-extrabold">{{ $stat->away_percent }}%</div>
+                                                    <div class="w-full bg-gray-200/60 rounded-full h-1 mt-1.5 overflow-hidden">
+                                                        <div class="bg-indigo-500 h-1 rounded-full" style="width: {{ $stat->away_percent }}%"></div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         @else
-                                            <div class="w-full bg-gray-100 rounded-full h-3 flex items-center justify-center text-[10px] text-gray-400 font-medium">
-                                                Aucun pronostic joué
+                                            <div class="w-full bg-gray-50 border border-gray-100 border-dashed rounded-xl py-5 flex items-center justify-center text-xs text-gray-400 font-medium">
+                                                Aucun pronostic joué pour ce match
                                             </div>
                                         @endif
                                     </div>
