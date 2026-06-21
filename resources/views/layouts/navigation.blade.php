@@ -1,3 +1,12 @@
+@php
+    $hasUnreadChat = false;
+    if (auth()->check()) {
+        $lastRead = auth()->user()->last_chat_read_at ?? auth()->user()->created_at;
+        $hasUnreadChat = \App\Models\ChatMessage::where('user_id', '!=', auth()->id())
+            ->where('created_at', '>', $lastRead)
+            ->exists();
+    }
+@endphp
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,6 +33,12 @@
                         </x-nav-link>
                         <x-nav-link :href="route('chat')" :active="request()->routeIs('chat')">
                             Discussion
+                            @if($hasUnreadChat)
+                                <span class="ms-1.5 flex h-2 w-2 relative">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                            @endif
                         </x-nav-link>
                     @endauth
                     <x-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">
@@ -124,7 +139,15 @@
                     Mes Pronostics
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('chat')" :active="request()->routeIs('chat')">
-                    Discussion
+                    <span class="flex items-center">
+                        Discussion
+                        @if($hasUnreadChat)
+                            <span class="ms-1.5 flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                        @endif
+                    </span>
                 </x-responsive-nav-link>
             @endauth
             <x-responsive-nav-link :href="route('leaderboard')" :active="request()->routeIs('leaderboard')">

@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'exclude_from_leaderboard',
+        'last_chat_read_at',
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'exclude_from_leaderboard' => 'boolean',
+            'last_chat_read_at' => 'datetime',
         ];
     }
 

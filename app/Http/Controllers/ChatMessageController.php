@@ -17,6 +17,10 @@ class ChatMessageController extends Controller
 {
     public function index()
     {
+        if (Auth::check()) {
+            Auth::user()->update(['last_chat_read_at' => now()]);
+        }
+
         // Calculer les points et rangs de tous les utilisateurs en une seule requête
         $usersStats = User::where('exclude_from_leaderboard', false)
             ->leftJoin('predictions', 'users.id', '=', 'predictions.user_id')
@@ -58,6 +62,10 @@ class ChatMessageController extends Controller
 
     public function store(Request $request)
     {
+        if (Auth::check()) {
+            Auth::user()->update(['last_chat_read_at' => now()]);
+        }
+
         $validated = $request->validate([
             'message' => 'required|string|max:1000',
         ]);
