@@ -139,7 +139,10 @@ class ChatMessageController extends Controller
 
     public function trendingGifs(Request $request)
     {
-        $apiKey = env('GIPHY_API_KEY', 'LIVDSRZtHp49C9I4cl4tFti4XkE91wGM');
+        $apiKey = env('GIPHY_API_KEY');
+        if (empty($apiKey) || $apiKey === 'LIVDSRZtHp49C9I4cl4tFti4XkE91wGM') {
+            return response()->json(['error' => 'API key not configured', 'code' => 'MISSING_KEY'], 400);
+        }
         $limit = $request->query('limit', 15);
 
         try {
@@ -149,9 +152,16 @@ class ChatMessageController extends Controller
                 'rating' => 'g',
             ]);
 
+            if ($response->failed()) {
+                return response()->json([
+                    'error' => 'Giphy API error',
+                    'code' => 'API_ERROR'
+                ], 400);
+            }
+
             return response()->json($response->json());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Unable to fetch trending gifs'], 500);
+            return response()->json(['error' => 'Unable to fetch trending gifs', 'code' => 'EXCEPTION'], 500);
         }
     }
 
@@ -161,7 +171,10 @@ class ChatMessageController extends Controller
             'q' => 'required|string',
         ]);
 
-        $apiKey = env('GIPHY_API_KEY', 'LIVDSRZtHp49C9I4cl4tFti4XkE91wGM');
+        $apiKey = env('GIPHY_API_KEY');
+        if (empty($apiKey) || $apiKey === 'LIVDSRZtHp49C9I4cl4tFti4XkE91wGM') {
+            return response()->json(['error' => 'API key not configured', 'code' => 'MISSING_KEY'], 400);
+        }
         $q = $request->query('q');
         $limit = $request->query('limit', 15);
 
@@ -173,9 +186,16 @@ class ChatMessageController extends Controller
                 'rating' => 'g',
             ]);
 
+            if ($response->failed()) {
+                return response()->json([
+                    'error' => 'Giphy API error',
+                    'code' => 'API_ERROR'
+                ], 400);
+            }
+
             return response()->json($response->json());
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Unable to search gifs'], 500);
+            return response()->json(['error' => 'Unable to search gifs', 'code' => 'EXCEPTION'], 500);
         }
     }
 }
