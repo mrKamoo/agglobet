@@ -27,7 +27,7 @@ class LeaderboardController extends Controller
 
         // Build base query with detailed statistics
         $query = User::query()
-            ->select('users.id', 'users.name', 'users.email')
+            ->select('users.id', 'users.name', 'users.email', 'users.avatar')
             ->where('users.exclude_from_leaderboard', false);
 
         // Apply period filters
@@ -96,6 +96,7 @@ class LeaderboardController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'avatar_url' => $user->avatar_url,
                 'total_points' => $totalPoints,
                 'predictions_count' => $predictionsCount,
                 'exact_scores' => $exactScores,
@@ -214,8 +215,8 @@ class LeaderboardController extends Controller
                 ->whereYear('games.match_date', Carbon::now()->year);
         }
 
-        $leader = $query->select('users.name', DB::raw('SUM(predictions.points_earned) as total_points'))
-            ->groupBy('users.id', 'users.name')
+        $leader = $query->select('users.id', 'users.name', 'users.avatar', DB::raw('SUM(predictions.points_earned) as total_points'))
+            ->groupBy('users.id', 'users.name', 'users.avatar')
             ->orderByDesc('total_points')
             ->first();
 

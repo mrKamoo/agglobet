@@ -13,12 +13,15 @@
                 @if($weekLeader)
                 <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-sm font-medium opacity-90">Meilleur de la semaine</div>
-                            <div class="text-2xl font-bold mt-1">{{ $weekLeader->name }}</div>
-                            <div class="text-3xl font-bold mt-2">{{ $weekLeader->total_points }} pts</div>
+                        <div class="flex items-center gap-4">
+                            <img src="{{ $weekLeader->avatar_url }}" alt="Avatar {{ $weekLeader->name }}" class="w-14 h-14 rounded-full border-2 border-white/20 shadow-md object-cover select-none shrink-0">
+                            <div>
+                                <div class="text-sm font-medium opacity-90">Meilleur de la semaine</div>
+                                <div class="text-2xl font-bold mt-1">{{ $weekLeader->name }}</div>
+                                <div class="text-3xl font-bold mt-2">{{ $weekLeader->total_points }} pts</div>
+                            </div>
                         </div>
-                        <div class="text-6xl">🏆</div>
+                        <div class="text-6xl opacity-40">🏆</div>
                     </div>
                 </div>
                 @endif
@@ -26,12 +29,15 @@
                 @if($monthLeader)
                 <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-sm font-medium opacity-90">Meilleur du mois</div>
-                            <div class="text-2xl font-bold mt-1">{{ $monthLeader->name }}</div>
-                            <div class="text-3xl font-bold mt-2">{{ $monthLeader->total_points }} pts</div>
+                        <div class="flex items-center gap-4">
+                            <img src="{{ $monthLeader->avatar_url }}" alt="Avatar {{ $monthLeader->name }}" class="w-14 h-14 rounded-full border-2 border-white/20 shadow-md object-cover select-none shrink-0">
+                            <div>
+                                <div class="text-sm font-medium opacity-90">Meilleur du mois</div>
+                                <div class="text-2xl font-bold mt-1">{{ $monthLeader->name }}</div>
+                                <div class="text-3xl font-bold mt-2">{{ $monthLeader->total_points }} pts</div>
+                            </div>
                         </div>
-                        <div class="text-6xl">👑</div>
+                        <div class="text-6xl opacity-40">👑</div>
                     </div>
                 </div>
                 @endif
@@ -118,7 +124,8 @@
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center gap-2">
+                                                <div class="flex items-center gap-3">
+                                                    <img src="{{ $user->avatar_url }}" alt="Avatar {{ $user->name }}" class="w-8 h-8 rounded-full border border-gray-200 shadow-sm shrink-0 object-cover select-none">
                                                     <div>
                                                         <div class="text-sm font-medium text-gray-900 flex items-center gap-2">
                                                             <span>{{ $user->name }}</span>
