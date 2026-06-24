@@ -195,9 +195,9 @@ class LeaderboardController extends Controller
 
     private function getPeriodLeader($period, $seasonId = null)
     {
-        $query = Prediction::query()
+        $query = User::query()
+            ->join('predictions', 'users.id', '=', 'predictions.user_id')
             ->join('games', 'predictions.game_id', '=', 'games.id')
-            ->join('users', 'predictions.user_id', '=', 'users.id')
             ->where('games.is_finished', true)
             ->where('users.exclude_from_leaderboard', false);
 
