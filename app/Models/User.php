@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Illuminate\Support\Facades\Storage;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -24,6 +26,7 @@ class User extends Authenticatable
         'is_admin',
         'exclude_from_leaderboard',
         'last_chat_read_at',
+        'avatar',
     ];
 
     /**
@@ -72,6 +75,9 @@ class User extends Authenticatable
 
     public function getAvatarUrlAttribute()
     {
+        if ($this->avatar) {
+            return Storage::url($this->avatar);
+        }
         return 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($this->name) . '&backgroundType=solid,gradientLinear';
     }
 }
