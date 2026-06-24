@@ -9,6 +9,88 @@
 
     <div class="py-12">
         <div id="app" class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            <!-- Message de diffusion -->
+            @if($announcement && $announcement->is_active)
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 shadow-sm flex items-start gap-4 transition hover:shadow-md">
+                    <div class="p-3 bg-amber-100 text-amber-600 rounded-xl shrink-0">
+                        <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-700 uppercase tracking-wider">Annonce importante</span>
+                            <span class="text-[10px] text-amber-600 font-medium">Publié par {{ $announcement->user->name }} le {{ $announcement->created_at->format('d/m/Y à H:i') }}</span>
+                        </div>
+                        <div class="mt-1.5 text-sm text-amber-900 font-medium whitespace-pre-wrap leading-relaxed">
+                            {{ $announcement->content }}
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Encart d'administration de diffusion -->
+            @if(auth()->user()->is_admin)
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-150">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            📢 Message de diffusion (Admin)
+                        </h3>
+                        @if(session('status') === 'broadcast-updated')
+                            <span class="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded">Message mis à jour avec succès !</span>
+                        @elseif(session('status') === 'broadcast-deleted')
+                            <span class="text-xs text-red-600 font-medium bg-red-50 px-2 py-1 rounded">Message de diffusion supprimé !</span>
+                        @endif
+                    </div>
+                    
+                    <form action="{{ route('admin.announcements.store') }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <textarea 
+                                name="content" 
+                                rows="3" 
+                                class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm shadow-sm transition-colors" 
+                                placeholder="Saisissez le message que vous souhaitez afficher sur le tableau de bord de tous les utilisateurs..."
+                                required
+                            >{{ $announcement?->content }}</textarea>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+                            <label class="inline-flex items-center cursor-pointer select-none">
+                                <input 
+                                    type="checkbox" 
+                                    name="is_active" 
+                                    value="1" 
+                                    {{ !$announcement || $announcement->is_active ? 'checked' : '' }} 
+                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                >
+                                <span class="ml-2 text-sm text-gray-600">Activer le message de diffusion</span>
+                            </label>
+                            
+                            <div class="flex items-center gap-2">
+                                @if($announcement)
+                                    <button 
+                                        type="submit" 
+                                        name="action" 
+                                        value="delete" 
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg text-xs uppercase tracking-widest shadow-sm transition active:scale-95 cursor-pointer"
+                                        onclick="return confirm('Voulez-vous vraiment supprimer et désactiver ce message de diffusion ?')"
+                                    >
+                                        Supprimer
+                                    </button>
+                                @endif
+                                <button 
+                                    type="submit" 
+                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-xs uppercase tracking-widest shadow-sm transition active:scale-95 cursor-pointer"
+                                >
+                                    Diffuser
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            @endif
             
             <!-- Top Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

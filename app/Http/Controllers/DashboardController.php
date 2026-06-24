@@ -66,6 +66,8 @@ class DashboardController extends Controller
             
         $successRate = $predictionsCount > 0 ? round(($correctPredictions / $predictionsCount) * 100) : 0;
 
+        $announcement = \App\Models\Announcement::latest()->first();
+
         return view('dashboard', compact(
             'user',
             'totalPoints',
@@ -73,7 +75,8 @@ class DashboardController extends Controller
             'nextGame',
             'hasPredictedNextGame',
             'recentPredictions',
-            'successRate'
+            'successRate',
+            'announcement'
         ));
     }
 }
