@@ -166,7 +166,7 @@
                 ? 'bg-indigo-50 border-indigo-300 text-indigo-700 hover:bg-indigo-100' 
                 : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
             ]"
-            :title="`Réagi par ${group.count} participant(s)`"
+            :title="group.userNames.length > 0 ? 'Réagi par : ' + group.userNames.join(', ') : 'Réagi par ' + group.count + ' participant(s)'"
           >
             <span>{{ group.emoji }}</span>
             <span class="text-[10px]">{{ group.count }}</span>
@@ -609,12 +609,16 @@ export default {
           groups[r.emoji] = {
             emoji: r.emoji,
             count: 0,
-            userReacted: false
+            userReacted: false,
+            userNames: []
           };
         }
         groups[r.emoji].count++;
         if (r.user_id === this.currentUserId) {
           groups[r.emoji].userReacted = true;
+        }
+        if (r.user && r.user.name) {
+          groups[r.emoji].userNames.push(r.user.name);
         }
       });
       
