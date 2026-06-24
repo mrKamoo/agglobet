@@ -76,7 +76,7 @@ class User extends Authenticatable
     public function getAvatarUrlAttribute()
     {
         if ($this->avatar) {
-            return Storage::url($this->avatar);
+            return asset('storage/' . $this->avatar);
         }
         return 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($this->name) . '&backgroundType=solid,gradientLinear';
     }
