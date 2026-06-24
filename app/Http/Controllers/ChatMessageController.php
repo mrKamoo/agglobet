@@ -39,7 +39,7 @@ class ChatMessageController extends Controller
             ];
         }
 
-        $messages = ChatMessage::with(['user:id,name,is_admin', 'reactions.user:id,name'])
+        $messages = ChatMessage::with(['user:id,name,is_admin,avatar', 'reactions.user:id,name'])
             ->orderBy('created_at', 'desc')
             ->take(50)
             ->get()
@@ -77,7 +77,7 @@ class ChatMessageController extends Controller
             'message' => $validated['message'],
         ]);
 
-        $message->load(['user:id,name,is_admin', 'reactions.user:id,name']);
+        $message->load(['user:id,name,is_admin,avatar', 'reactions.user:id,name']);
 
         // Calculer les stats de l'utilisateur ayant posté pour la réponse immédiate
         if ($message->user) {
