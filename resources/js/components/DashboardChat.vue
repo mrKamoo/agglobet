@@ -51,7 +51,7 @@
         <img 
           v-if="msg.user"
           :src="msg.user.avatar_url" 
-          class="w-8 h-8 rounded-full border border-gray-200 shadow-sm shrink-0 mt-0.5 select-none" 
+          class="w-8 h-8 rounded-full border border-gray-200 shadow-sm shrink-0 mt-0.5 select-none transition-transform duration-200 transform hover:scale-150 hover:z-10 origin-center" 
           :alt="msg.user.name"
           :title="msg.user.name"
         />
