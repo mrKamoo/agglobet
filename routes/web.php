@@ -34,6 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/chat-messages', [\App\Http\Controllers\ChatMessageController::class, 'store'])->name('api.chat.store');
     Route::post('/api/chat-messages/{chatMessage}/react', [\App\Http\Controllers\ChatMessageController::class, 'react'])->name('api.chat.react');
     Route::delete('/api/chat-messages/{chatMessage}', [\App\Http\Controllers\ChatMessageController::class, 'destroy'])->name('api.chat.destroy');
+    Route::get('/api/gifs/trending', [\App\Http\Controllers\ChatMessageController::class, 'trendingGifs'])->name('api.gifs.trending');
+    Route::get('/api/gifs/search', [\App\Http\Controllers\ChatMessageController::class, 'searchGifs'])->name('api.gifs.search');
+
 
     // Games
     Route::get('/games', [GameController::class, 'index'])->name('games.index');

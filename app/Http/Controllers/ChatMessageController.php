@@ -12,6 +12,8 @@ use App\Models\ChatMessageReaction;
 use App\Models\User;
 use App\Models\Prediction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+
 
 class ChatMessageController extends Controller
 {
@@ -134,4 +136,47 @@ class ChatMessageController extends Controller
 
         return response()->json(['success' => true], 200);
     }
+
+    public function trendingGifs(Request $request)
+    {
+        $apiKey = env('GIPHY_API_KEY', 'LIVDSRZtHp49C9I4cl4tFti4XkE91wGM');
+        $limit = $request->query('limit', 15);
+
+        try {
+            $response = Http::get('https://api.giphy.com/v1/gifs/trending', [
+                'api_key' => $apiKey,
+                'limit' => $limit,
+                'rating' => 'g',
+            ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Unable to fetch trending gifs'], 500);
+        }
+    }
+
+    public function searchGifs(Request $request)
+    {
+        $request->validate([
+            'q' => 'required|string',
+        ]);
+
+        $apiKey = env('GIPHY_API_KEY', 'LIVDSRZtHp49C9I4cl4tFti4XkE91wGM');
+        $q = $request->query('q');
+        $limit = $request->query('limit', 15);
+
+        try {
+            $response = Http::get('https://api.giphy.com/v1/gifs/search', [
+                'api_key' => $apiKey,
+                'q' => $q,
+                'limit' => $limit,
+                'rating' => 'g',
+            ]);
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Unable to search gifs'], 500);
+        }
+    }
 }
+

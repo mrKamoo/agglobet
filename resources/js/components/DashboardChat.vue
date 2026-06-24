@@ -84,12 +84,23 @@
             class="rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all duration-200 hover:shadow-md whitespace-pre-wrap break-words"
             :class="[
               msg.user_id === currentUserId 
-                ? 'bg-indigo-600 text-white rounded-tr-none' 
-                : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
+                ? (isGifUrl(msg.message) ? 'bg-transparent text-white rounded-tr-none p-0 shadow-none hover:shadow-none' : 'bg-indigo-600 text-white rounded-tr-none') 
+                : (isGifUrl(msg.message) ? 'bg-transparent text-gray-800 border-none rounded-tl-none p-0 shadow-none hover:shadow-none' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none')
             ]"
           >
-            {{ msg.message }}
+            <template v-if="isGifUrl(msg.message)">
+              <img 
+                :src="msg.message" 
+                class="rounded-xl max-h-60 max-w-full object-contain shadow-sm border border-gray-100 hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200"
+                alt="GIF" 
+                loading="lazy"
+              />
+            </template>
+            <template v-else>
+              {{ msg.message }}
+            </template>
           </div>
+
 
           <!-- Add Reaction & Delete Buttons (visible on hover) -->
           <div class="flex items-center space-x-1 shrink-0">
@@ -200,6 +211,81 @@
             </div>
           </div>
 
+          <!-- GIF Picker Toggle & Popover -->
+          <div ref="gifPickerContainer" class="relative flex items-center">
+            <button 
+              type="button"
+              @click.stop="toggleGifPicker"
+              class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors focus:outline-none"
+              title="Ajouter un GIF"
+            >
+              <span class="text-xs font-black tracking-wider border-2 border-gray-400 text-gray-500 hover:border-indigo-600 hover:text-indigo-600 rounded px-1 py-0.5 leading-none transition-colors select-none">GIF</span>
+            </button>
+
+            <!-- GIF Picker Popover -->
+            <div 
+              v-if="showGifPicker"
+              class="absolute bottom-full mb-2 left-0 bg-white border border-gray-200 rounded-xl shadow-xl p-3 z-50 w-72 flex flex-col space-y-2"
+            >
+              <div class="flex items-center border border-gray-200 rounded-lg px-2 py-1 bg-gray-50">
+                <svg class="w-4 h-4 text-gray-400 mr-1.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input 
+                  v-model="gifSearchQuery"
+                  @input="debounceGifSearch"
+                  type="text" 
+                  placeholder="Rechercher un GIF..." 
+                  class="bg-transparent border-none focus:ring-0 text-xs p-0 w-full"
+                  ref="gifSearchInput"
+                />
+                <button 
+                  v-if="gifSearchQuery" 
+                  @click="clearGifSearch" 
+                  type="button"
+                  class="text-gray-400 hover:text-gray-600"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- GIF Results Grid -->
+              <div class="h-48 overflow-y-auto min-h-[12rem] relative">
+                <div v-if="loadingGifs" class="flex items-center justify-center h-full">
+                  <svg class="animate-spin h-6 w-6 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+                <div v-else-if="gifs.length === 0" class="flex flex-col items-center justify-center h-full text-center text-xs text-gray-400">
+                  Aucun GIF trouvé.
+                </div>
+                <div v-else class="grid grid-cols-2 gap-1.5">
+                  <div 
+                    v-for="gif in gifs" 
+                    :key="gif.id"
+                    @click="sendGif(gif.images.fixed_height.url)"
+                    class="cursor-pointer overflow-hidden rounded-md h-20 bg-gray-100 hover:opacity-85 transition-opacity"
+                  >
+                    <img 
+                      :src="gif.images.fixed_height_small.url" 
+                      class="w-full h-full object-cover" 
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Attribution -->
+              <div class="flex items-center justify-end text-[9px] text-gray-400">
+                Powered by GIPHY
+              </div>
+            </div>
+          </div>
+
+
           <textarea 
             ref="messageTextarea"
             v-model="newMessage"
@@ -209,7 +295,7 @@
             maxlength="1000"
             @keydown.enter.prevent="handleEnter"
             :disabled="sending"
-            @focus="closeEmojiPicker"
+            @focus="closePickers"
           ></textarea>
 
           <button 
@@ -263,6 +349,11 @@ export default {
       pollingInterval: null,
       userScrolledUp: false,
       showEmojiPicker: false,
+      showGifPicker: false,
+      gifSearchQuery: '',
+      gifs: [],
+      loadingGifs: false,
+      gifSearchTimeout: null,
       activeReactionMenuMessageId: null,
       reactionEmojis: ['👍', '❤️', '😂', '🔥', '👏', '⚽'],
       popularEmojis: [
@@ -272,6 +363,7 @@ export default {
         '🥳', '⚽', '🏆', '🎯', '🥅', '🍺',
         '❤️', '⚡', '💡', '🤫', '👀', '🚀'
       ]
+
     };
   },
   mounted() {
@@ -365,10 +457,96 @@ export default {
     },
     toggleEmojiPicker() {
       this.showEmojiPicker = !this.showEmojiPicker;
+      if (this.showEmojiPicker) {
+        this.closeGifPicker();
+      }
     },
     closeEmojiPicker() {
       this.showEmojiPicker = false;
     },
+    toggleGifPicker() {
+      this.showGifPicker = !this.showGifPicker;
+      if (this.showGifPicker) {
+        this.closeEmojiPicker();
+        this.fetchGifs();
+        this.$nextTick(() => {
+          if (this.$refs.gifSearchInput) {
+            this.$refs.gifSearchInput.focus();
+          }
+        });
+      }
+    },
+    closeGifPicker() {
+      this.showGifPicker = false;
+    },
+    closePickers() {
+      this.closeEmojiPicker();
+      this.closeGifPicker();
+    },
+    clearGifSearch() {
+      this.gifSearchQuery = '';
+      this.fetchGifs();
+    },
+    debounceGifSearch() {
+      if (this.gifSearchTimeout) {
+        clearTimeout(this.gifSearchTimeout);
+      }
+      this.gifSearchTimeout = setTimeout(() => {
+        this.fetchGifs();
+      }, 500);
+    },
+    async fetchGifs() {
+      this.loadingGifs = true;
+      try {
+        let response;
+        if (this.gifSearchQuery.trim()) {
+          response = await axios.get('/api/gifs/search', {
+            params: { q: this.gifSearchQuery }
+          });
+        } else {
+          response = await axios.get('/api/gifs/trending');
+        }
+        
+        if (response.data && response.data.data) {
+          this.gifs = response.data.data;
+        } else {
+          this.gifs = [];
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des GIFs:", error);
+        this.gifs = [];
+      } finally {
+        this.loadingGifs = false;
+      }
+    },
+    async sendGif(gifUrl) {
+      this.closeGifPicker();
+      this.sending = true;
+      
+      try {
+        const response = await axios.post('/api/chat-messages', {
+          message: gifUrl
+        });
+        
+        this.messages.push(response.data);
+        this.userScrolledUp = false;
+        this.scrollToBottom();
+      } catch (error) {
+        console.error("Erreur lors de l'envoi du GIF:", error);
+        alert("Impossible d'envoyer le GIF. Veuillez réessayer.");
+      } finally {
+        this.sending = false;
+      }
+    },
+    isGifUrl(text) {
+      if (!text || typeof text !== 'string') return false;
+      return text.startsWith('http') && (
+        text.match(/\.(gif|webp)($|\?)/i) || 
+        text.includes('media.giphy.com/media/') || 
+        text.includes('media.tenor.com/')
+      );
+    },
+
     addEmoji(emoji) {
       const textarea = this.$refs.messageTextarea;
       if (!textarea) {
@@ -428,9 +606,13 @@ export default {
       return Object.values(groups);
     },
     handleOutsideClick(event) {
-      const picker = this.$refs.emojiPickerContainer;
-      if (picker && !picker.contains(event.target)) {
+      const emojiPicker = this.$refs.emojiPickerContainer;
+      if (emojiPicker && !emojiPicker.contains(event.target)) {
         this.closeEmojiPicker();
+      }
+      const gifPicker = this.$refs.gifPickerContainer;
+      if (gifPicker && !gifPicker.contains(event.target)) {
+        this.closeGifPicker();
       }
       this.activeReactionMenuMessageId = null;
     },
