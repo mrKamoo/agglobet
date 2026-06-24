@@ -27,6 +27,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['avatar_url'];
+
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
@@ -60,5 +68,10 @@ class User extends Authenticatable
     public function championPredictions()
     {
         return $this->hasMany(ChampionPrediction::class);
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        return 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($this->name) . '&backgroundType=solid,gradientLinear';
     }
 }
