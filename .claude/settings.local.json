@@ -24,7 +24,8 @@
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
       "Bash(mkdir:*)",
-      "WebFetch(domain:www.football-data.org)"
+      "WebFetch(domain:www.football-data.org)",
+      "Bash(xargs grep -l \"BONUS_POINTS\\\\|30.*point\\\\|champion.*point\")"
     ],
     "deny": [],
     "ask": []

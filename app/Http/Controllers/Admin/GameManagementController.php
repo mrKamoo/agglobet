@@ -47,7 +47,7 @@ class GameManagementController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'season_id' => 'required|exists:seasons,id',
             'home_team_id' => 'required|exists:teams,id',
             'away_team_id' => 'required|exists:teams,id|different:home_team_id',
@@ -58,7 +58,7 @@ class GameManagementController extends Controller
             'stadium' => 'nullable|string|max:255',
         ]);
 
-        Game::create($request->validated());
+        Game::create($validated);
 
         return redirect()->route('admin.games.index')
             ->with('success', 'Match créé avec succès.');
@@ -73,7 +73,7 @@ class GameManagementController extends Controller
 
     public function update(Request $request, Game $game)
     {
-        $request->validate([
+        $validated = $request->validate([
             'season_id' => 'required|exists:seasons,id',
             'home_team_id' => 'required|exists:teams,id',
             'away_team_id' => 'required|exists:teams,id|different:home_team_id',
@@ -84,7 +84,7 @@ class GameManagementController extends Controller
             'stadium' => 'nullable|string|max:255',
         ]);
 
-        $game->update($request->validated());
+        $game->update($validated);
 
         return redirect()->route('admin.games.index')
             ->with('success', 'Match mis à jour avec succès.');

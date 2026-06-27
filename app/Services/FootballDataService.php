@@ -168,33 +168,48 @@ class FootballDataService
         }
 
         // Vérifier si le match existe déjà
-        $gameQuery = Game::where('season_id', $season->id)
-            ->where('home_team_id', $homeTeam->id)
-            ->where('away_team_id', $awayTeam->id);
-
-        if ($season->isTournament()) {
-            $gameQuery->where('round', $round);
-            if ($group) {
-                $gameQuery->where('group', $group);
-            }
-        } else {
-            $gameQuery->where('matchday', $matchday);
+        $game = null;
+        if (isset($matchData['id'])) {
+            $game = Game::where('season_id', $season->id)
+                ->where('api_id', $matchData['id'])
+                ->first();
         }
 
-        $game = $gameQuery->first();
+        if (!$game) {
+            $gameQuery = Game::where('season_id', $season->id)
+                ->where('home_team_id', $homeTeam->id)
+                ->where('away_team_id', $awayTeam->id);
+
+            if ($season->isTournament()) {
+                $gameQuery->where('round', $round);
+                if ($group) {
+                    $gameQuery->where('group', $group);
+                }
+            } else {
+                $gameQuery->where('matchday', $matchday);
+            }
+
+            $game = $gameQuery->first();
+        }
 
         $shouldCalculatePoints = false;
 
         if ($game) {
-            // Mettre à jour uniquement si le statut a changé ou si les scores ont changé
+            // Mettre à jour uniquement si le statut, les scores, les équipes ou la date ont changé
             if ($game->is_finished != $isFinished ||
                 $game->home_score != $homeScore ||
                 $game->away_score != $awayScore ||
+                $game->home_team_id != $homeTeam->id ||
+                $game->away_team_id != $awayTeam->id ||
+                $game->api_id != ($matchData['id'] ?? null) ||
                 $game->match_date->ne($matchDate)) {
 
                 $wasNotFinished = !$game->is_finished;
 
                 $game->update([
+                    'api_id' => $matchData['id'] ?? $game->api_id,
+                    'home_team_id' => $homeTeam->id,
+                    'away_team_id' => $awayTeam->id,
                     'match_date' => $matchDate,
                     'home_score' => $homeScore,
                     'away_score' => $awayScore,
@@ -215,6 +230,7 @@ class FootballDataService
             // Créer un nouveau match
             $game = Game::create([
                 'season_id' => $season->id,
+                'api_id' => $matchData['id'] ?? null,
                 'home_team_id' => $homeTeam->id,
                 'away_team_id' => $awayTeam->id,
                 'matchday' => $matchday,

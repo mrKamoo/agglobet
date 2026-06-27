@@ -189,7 +189,7 @@ class StandingsController extends Controller
         $knockoutGames = Game::where('season_id', $season->id)
             ->whereIn('round', array_keys($knockoutRounds))
             ->with(['homeTeam', 'awayTeam'])
-            ->orderBy('match_date', 'asc')
+            ->orderBy('id', 'asc')
             ->get();
 
         // 3.1 Détecter dynamiquement les matchs de 16es de finale attendant un 3e
@@ -226,6 +226,21 @@ class StandingsController extends Controller
             }
         }
 
+        $matchNumberToApiId = [
+            73 => 537417, 74 => 537423, 75 => 537415, 76 => 537418,
+            77 => 537424, 78 => 537416, 79 => 537425, 80 => 537426,
+            81 => 537422, 82 => 537421, 83 => 537420, 84 => 537419,
+            85 => 537429, 86 => 537428, 87 => 537427, 88 => 537430,
+            89 => 537376, 90 => 537375, 91 => 537377, 92 => 537378,
+            93 => 537379, 94 => 537380, 95 => 537381, 96 => 537382,
+            97 => 537383, 98 => 537384, 99 => 537385, 100 => 537386,
+            101 => 537387, 102 => 537388, 103 => 537389, 104 => 537390
+        ];
+
+        $gamesByApiId = $knockoutGames->keyBy('api_id');
+        $resolvedCache = [];
+
+        // Préréglage des 16es de finale dans les relations pour que la résolution récursive fonctionne
         foreach ($knockoutGames as $game) {
             if ($game->round === '16es de finale') {
                 // Résoudre l'équipe à domicile
@@ -264,6 +279,19 @@ class StandingsController extends Controller
                     }
                 }
             }
+        }
+
+        // Résoudre de manière récursive tous les matchs (des 8es à la Finale)
+        foreach ($knockoutGames as $game) {
+            $resolvedHome = $this->resolveTeam($game->homeTeam, $winners, $runnersUp, $matched3rds, $gamesByApiId, $matchNumberToApiId, $resolvedCache);
+            if ($resolvedHome) {
+                $game->setRelation('homeTeam', $resolvedHome);
+            }
+
+            $resolvedAway = $this->resolveTeam($game->awayTeam, $winners, $runnersUp, $matched3rds, $gamesByApiId, $matchNumberToApiId, $resolvedCache);
+            if ($resolvedAway) {
+                $game->setRelation('awayTeam', $resolvedAway);
+            }
 
             $knockoutRounds[$game->round][] = $game;
         }
@@ -298,6 +326,94 @@ class StandingsController extends Controller
             'championDeadlinePassed',
             'wcTeams'
         ));
+    }
+
+    private function resolveTeam($team, $winners, $runnersUp, $matched3rds, $gamesByApiId, $matchNumberToApiId, &$resolvedCache = [])
+    {
+        if (!$team) {
+            return null;
+        }
+
+        $name = $team->name;
+
+        // Si c'est déjà une vraie équipe (pas de termes de placeholder), on la retourne telle quelle
+        $placeholderTerms = ['1er Groupe', '2e Groupe', '3e Groupe', 'Vainqueur Match', 'Perdant Match'];
+        $isPlaceholder = false;
+        foreach ($placeholderTerms as $term) {
+            if (str_contains($name, $term)) {
+                $isPlaceholder = true;
+                break;
+            }
+        }
+
+        if (!$isPlaceholder) {
+            return $team;
+        }
+
+        // Éviter les boucles infinies
+        if (isset($resolvedCache[$name])) {
+            return $resolvedCache[$name];
+        }
+        $resolvedCache[$name] = null; // Marquer comme en cours
+
+        // 1. Résolution des vainqueurs de groupe
+        if (str_starts_with($name, '1er Groupe ')) {
+            $groupLetter = substr($name, -1);
+            $resolved = $winners[$groupLetter] ?? null;
+            $resolvedCache[$name] = $resolved;
+            return $resolved;
+        }
+
+        // 2. Résolution des deuxièmes de groupe
+        if (str_starts_with($name, '2e Groupe ')) {
+            $groupLetter = substr($name, -1);
+            $resolved = $runnersUp[$groupLetter] ?? null;
+            $resolvedCache[$name] = $resolved;
+            return $resolved;
+        }
+
+        // 3. Résolution des troisièmes de groupe
+        if (str_contains($name, '3e Groupe')) {
+            return null; 
+        }
+
+        // 4. Résolution des vainqueurs/perdants de matchs
+        if (preg_match('/(Vainqueur|Perdant) Match (\d+)/', $name, $matches)) {
+            $type = $matches[1]; // Vainqueur ou Perdant
+            $matchNum = (int)$matches[2];
+
+            $apiId = $matchNumberToApiId[$matchNum] ?? null;
+            if (!$apiId) {
+                return null;
+            }
+
+            $sourceGame = $gamesByApiId[$apiId] ?? null;
+            if (!$sourceGame) {
+                return null;
+            }
+
+            // Si le match source a déjà ses vraies équipes résolues de manière transitive, on les résout d'abord
+            $sourceHome = $this->resolveTeam($sourceGame->homeTeam, $winners, $runnersUp, $matched3rds, $gamesByApiId, $matchNumberToApiId, $resolvedCache);
+            $sourceAway = $this->resolveTeam($sourceGame->awayTeam, $winners, $runnersUp, $matched3rds, $gamesByApiId, $matchNumberToApiId, $resolvedCache);
+
+            if ($sourceGame->is_finished && $sourceHome && $sourceAway) {
+                if ($sourceGame->home_score > $sourceGame->away_score) {
+                    $winner = $sourceHome;
+                    $loser = $sourceAway;
+                } elseif ($sourceGame->away_score > $sourceGame->home_score) {
+                    $winner = $sourceAway;
+                    $loser = $sourceHome;
+                } else {
+                    return null;
+                }
+
+                $resolved = ($type === 'Vainqueur') ? $winner : $loser;
+                $resolvedCache[$name] = $resolved;
+                return $resolved;
+            }
+        }
+
+        return null;
     }
 
     private function match3rdPlacedTeams($best3rds, $gameIds, $allowed3rdGroups, $index = 0, $currentMatch = [])
