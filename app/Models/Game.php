@@ -37,7 +37,7 @@ class Game extends Model
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
             get: fn ($value) => $value ? \Carbon\Carbon::parse($value, 'Europe/Paris') : null,
-            set: fn ($value) => $value ? \Carbon\Carbon::parse($value)->setTimezone('Europe/Paris')->format('Y-m-d H:i:s') : null,
+            set: fn ($value) => $value ? \Carbon\Carbon::parse($value, 'Europe/Paris')->setTimezone('Europe/Paris')->format('Y-m-d H:i:s') : null,
         );
     }
 
