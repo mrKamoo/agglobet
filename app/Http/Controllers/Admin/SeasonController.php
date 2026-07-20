@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Season;
+use App\Models\Team;
 use Illuminate\Http\Request;
 
 class SeasonController extends Controller
@@ -16,7 +17,8 @@ class SeasonController extends Controller
 
     public function create()
     {
-        return view('admin.seasons.create');
+        $teams = Team::orderBy('name')->get();
+        return view('admin.seasons.create', compact('teams'));
     }
 
     public function store(Request $request)
@@ -27,6 +29,7 @@ class SeasonController extends Controller
             'end_date' => 'required|date|after:start_date',
             'type' => 'required|string|in:league,tournament',
             'competition_id' => 'nullable|integer',
+            'winner_team_id' => 'nullable|exists:teams,id',
         ]);
 
         // Quand une nouvelle compétition est créée, elle prend le dessus (is_active = true)
@@ -41,7 +44,8 @@ class SeasonController extends Controller
 
     public function edit(Season $season)
     {
-        return view('admin.seasons.edit', compact('season'));
+        $teams = Team::orderBy('name')->get();
+        return view('admin.seasons.edit', compact('season', 'teams'));
     }
 
     public function update(Request $request, Season $season)
@@ -53,6 +57,7 @@ class SeasonController extends Controller
             'is_active' => 'boolean',
             'type' => 'required|string|in:league,tournament',
             'competition_id' => 'nullable|integer',
+            'winner_team_id' => 'nullable|exists:teams,id',
         ]);
 
         // If activating this season, deactivate all others

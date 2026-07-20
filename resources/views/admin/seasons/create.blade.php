@@ -56,6 +56,21 @@
                             @enderror
                         </div>
 
+                        <div class="mb-4">
+                            <label for="winner_team_id" class="block text-sm font-medium text-gray-700 font-semibold text-gray-800">🏆 Équipe Gagnante (Champion de la saison)</label>
+                            <select name="winner_team_id" id="winner_team_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">-- Aucune équipe gagnante pour le moment --</option>
+                                @foreach($teams as $team)
+                                    <option value="{{ $team->id }}" {{ old('winner_team_id') == $team->id ? 'selected' : '' }}>
+                                        {{ $team->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('winner_team_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="flex items-center justify-end gap-4">
                             <a href="{{ route('admin.seasons.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400">
                                 Annuler
