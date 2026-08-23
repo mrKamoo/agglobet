@@ -294,8 +294,22 @@ class FootballDataService
         $activeRule = PointsRule::where('is_active', true)->first();
 
         if (!$activeRule) {
-            Log::warning('No active points rule found');
-            return;
+            Log::warning('No active points rule found. Attempting to activate or create a default rule.');
+            
+            // Check if any rule exists
+            $activeRule = PointsRule::first();
+            if ($activeRule) {
+                $activeRule->update(['is_active' => true]);
+            } else {
+                $activeRule = PointsRule::create([
+                    'name' => 'Règle standard',
+                    'description' => 'Système de points standard généré automatiquement',
+                    'exact_score' => 5,
+                    'correct_difference' => 3,
+                    'correct_winner' => 1,
+                    'is_active' => true,
+                ]);
+            }
         }
 
         $predictions = Prediction::where('game_id', $game->id)->get();

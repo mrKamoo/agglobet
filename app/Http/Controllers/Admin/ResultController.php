@@ -21,7 +21,7 @@ class ResultController extends Controller
         return view('admin.results.index', compact('games'));
     }
 
-    public function update(Request $request, Game $game)
+    public function update(Request $request, Game $game, \App\Services\FootballDataService $service)
     {
         $request->validate([
             'home_score' => 'required|integer|min:0|max:20',
@@ -34,54 +34,10 @@ class ResultController extends Controller
             'is_finished' => true,
         ]);
 
-        // Calculate points for all predictions on this game
-        $this->calculatePoints($game);
+        // Calculate points for all predictions on this game using the service
+        $service->calculatePoints($game);
 
         return redirect()->back()
             ->with('success', 'Résultat enregistré et points calculés avec succès.');
-    }
-
-    private function calculatePoints(Game $game)
-    {
-        $activeRule = PointsRule::where('is_active', true)->first();
-
-        if (!$activeRule) {
-            return;
-        }
-
-        $predictions = Prediction::where('game_id', $game->id)->get();
-
-        foreach ($predictions as $prediction) {
-            $points = 0;
-
-            // Exact score
-            if ($prediction->home_score == $game->home_score &&
-                $prediction->away_score == $game->away_score) {
-                $points = $activeRule->exact_score;
-            }
-            // Correct goal difference
-            elseif (($prediction->home_score - $prediction->away_score) ==
-                    ($game->home_score - $game->away_score)) {
-                $points = $activeRule->correct_difference;
-            }
-            // Correct winner or draw
-            elseif ($this->getResult($prediction->home_score, $prediction->away_score) ==
-                    $this->getResult($game->home_score, $game->away_score)) {
-                $points = $activeRule->correct_winner;
-            }
-
-            $prediction->timestamps = false;
-            $prediction->update(['points_earned' => $points]);
-        }
-    }
-
-    private function getResult($homeScore, $awayScore)
-    {
-        if ($homeScore > $awayScore) {
-            return 'home';
-        } elseif ($homeScore < $awayScore) {
-            return 'away';
-        }
-        return 'draw';
     }
 }
