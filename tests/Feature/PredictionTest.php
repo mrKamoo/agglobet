@@ -248,4 +248,53 @@ class PredictionTest extends TestCase
         $response->assertViewHas('userChampionPrediction');
         $response->assertViewHas('championDeadlinePassed');
     }
+
+    public function test_prediction_recalculates_points_if_scores_change_on_finished_game()
+    {
+        $season = Season::factory()->create(['name' => 'Ligue 1', 'is_active' => true]);
+        $homeTeam = Team::factory()->create(['name' => 'Team Home']);
+        $awayTeam = Team::factory()->create(['name' => 'Team Away']);
+
+        $game = Game::factory()->create([
+            'season_id' => $season->id,
+            'api_id' => 12345,
+            'home_team_id' => $homeTeam->id,
+            'away_team_id' => $awayTeam->id,
+            'match_date' => now()->subDay(),
+            'home_score' => 1,
+            'away_score' => 1,
+            'is_finished' => true,
+        ]);
+
+        $prediction = Prediction::factory()->create([
+            'game_id' => $game->id,
+            'home_score' => 2,
+            'away_score' => 1,
+            'points_earned' => 0,
+        ]);
+
+        $matchData = [
+            'id' => 12345,
+            'utcDate' => $game->match_date->toIso8601String(),
+            'status' => 'FINISHED',
+            'matchday' => $game->matchday,
+            'score' => [
+                'fullTime' => ['home' => 2, 'away' => 1]
+            ],
+            'homeTeam' => ['name' => 'Team Home'],
+            'awayTeam' => ['name' => 'Team Away'],
+        ];
+
+        $service = app(FootballDataService::class);
+        
+        $stats = ['updated' => 0, 'created' => 0, 'skipped' => 0, 'points_calculated' => 0];
+        
+        $reflection = new \ReflectionClass($service);
+        $method = $reflection->getMethod('syncMatch');
+        $method->setAccessible(true);
+        $method->invokeArgs($service, [$matchData, $season, &$stats]);
+
+        $prediction->refresh();
+        $this->assertEquals(5, $prediction->points_earned);
+    }
 }

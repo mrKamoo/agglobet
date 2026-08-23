@@ -205,6 +205,7 @@ class FootballDataService
                 $game->match_date->ne($matchDate)) {
 
                 $wasNotFinished = !$game->is_finished;
+                $scoresChanged = ($game->home_score != $homeScore || $game->away_score != $awayScore);
 
                 $game->update([
                     'api_id' => $matchData['id'] ?? $game->api_id,
@@ -221,8 +222,8 @@ class FootballDataService
 
                 $stats['updated']++;
 
-                // Calculer les points si le match vient d'être marqué comme terminé
-                if ($isFinished && $wasNotFinished) {
+                // Calculer les points si le match vient d'être marqué comme terminé ou si les scores d'un match terminé ont changé
+                if (($isFinished && $wasNotFinished) || ($isFinished && $scoresChanged)) {
                     $shouldCalculatePoints = true;
                 }
             }
